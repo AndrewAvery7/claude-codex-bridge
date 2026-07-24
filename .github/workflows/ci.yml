@@ -32,7 +32,7 @@ jobs:
         shell: pwsh
         run: |
           $bad = Get-ChildItem plugins/codex-bridge/scripts/*.ps1 | Where-Object {
-            (Get-Content $_.FullName -Raw -Encoding Byte | Where-Object { $_ -gt 127 }).Count -gt 0
+            @([System.IO.File]::ReadAllBytes($_.FullName) | Where-Object { $_ -gt 127 }).Count -gt 0
           }
           if ($bad) { $bad | ForEach-Object { Write-Error "Non-ASCII bytes in $($_.Name)" }; exit 1 }
           Write-Host "All .ps1 files are pure ASCII"
