@@ -5,16 +5,16 @@
       <stop offset="1" stop-color="#10A37F"/>
     </linearGradient>
   </defs>
-  <rect x="20" y="30" width="120" height="80" rx="18" fill="#D97757"/>
-  <text x="80" y="83" font-family="Segoe UI, Arial, sans-serif" font-size="34" font-weight="700" fill="#fff" text-anchor="middle">CC</text>
-  <path d="M150 70 H 250" stroke="url(#g)" stroke-width="10" stroke-linecap="round"/>
-  <path d="M232 52 L 256 70 L 232 88" fill="none" stroke="url(#g)" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
-  <rect x="268" y="30" width="120" height="80" rx="18" fill="#10A37F"/>
-  <text x="328" y="83" font-family="Segoe UI, Arial, sans-serif" font-size="34" font-weight="700" fill="#fff" text-anchor="middle">CX</text>
-  <text x="420" y="76" font-family="Segoe UI, Arial, sans-serif" font-size="44" font-weight="650" fill="#333">
+  <rect x="16" y="30" width="110" height="80" rx="18" fill="#D97757"/>
+  <text x="71" y="83" font-family="Segoe UI, Arial, sans-serif" font-size="34" font-weight="700" fill="#fff" text-anchor="middle">CC</text>
+  <path d="M132 70 H 174" stroke="url(#g)" stroke-width="10" stroke-linecap="round"/>
+  <path d="M160 52 L 182 70 L 160 88" fill="none" stroke="url(#g)" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="194" y="30" width="110" height="80" rx="18" fill="#10A37F"/>
+  <text x="249" y="83" font-family="Segoe UI, Arial, sans-serif" font-size="34" font-weight="700" fill="#fff" text-anchor="middle">CX</text>
+  <text x="330" y="76" font-family="Segoe UI, Arial, sans-serif" font-size="42" font-weight="650" fill="#333">
     claude-codex-bridge
   </text>
-  <text x="422" y="106" font-family="Segoe UI, Arial, sans-serif" font-size="19" fill="#777">
+  <text x="332" y="106" font-family="Segoe UI, Arial, sans-serif" font-size="19" fill="#777">
     session transfer + workbench parity
   </text>
 </svg>
