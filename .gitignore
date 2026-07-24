@@ -1,0 +1,9 @@
+# User-local sync state (machine-specific, regenerated on first run)
+scripts/sync-manifest.json
+sync-manifest.json
+
+# Your personal flattened instructions (create from AGENTS.md.example)
+AGENTS.md
+
+# Backups the installer creates
+*.bak-*
