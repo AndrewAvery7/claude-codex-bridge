@@ -1,0 +1,43 @@
+name: Bug report
+description: Something broke during transfer, launch, or parity sync
+labels: [bug]
+body:
+  - type: input
+    id: versions
+    attributes:
+      label: Versions
+      description: "codex --version / Codex VS Code extension / codex-plugin-cc / Windows"
+      placeholder: "codex-cli 0.145.0, extension 26.721, plugin 1.0.6, Windows 11"
+    validations:
+      required: true
+  - type: dropdown
+    id: component
+    attributes:
+      label: Component
+      options:
+        - /to-codex skill
+        - transfer-to-codex.ps1 (engine)
+        - switch-to-codex.ps1 (desktop launcher)
+        - setup-parity.ps1 (parity sync)
+        - Deep link (codex:// or vscode://)
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: Include the script's console output if you have it (redact any personal paths)
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before filing
+      options:
+        - label: I checked docs/TROUBLESHOOTING.md
+          required: true

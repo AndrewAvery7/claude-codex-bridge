@@ -11,9 +11,14 @@
 
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green.svg" alt="MIT license"></a>
-  <img src="https://img.shields.io/badge/platform-Windows-blue.svg" alt="Windows">
+  <img src="https://img.shields.io/badge/platform-Windows%20(macOS%2FLinux%20PRs%20welcome)-blue.svg" alt="Windows">
   <img src="https://img.shields.io/badge/PowerShell-5.1%2B-blue.svg" alt="PowerShell 5.1+">
   <img src="https://img.shields.io/badge/status-tested%20end--to--end-brightgreen.svg" alt="Tested">
+  <a href="https://github.com/openai/codex-plugin-cc/pull/551"><img src="https://img.shields.io/badge/upstream%20fix-codex--plugin--cc%20%23551-orange.svg" alt="Upstream PR"></a>
+</p>
+
+<p align="center">
+  <img src="assets/demo.gif" alt="to-codex demo: type /to-codex, pick a model, and the Codex desktop app opens on your transferred conversation" width="800">
 </p>
 
 ---
@@ -67,14 +72,17 @@ flowchart TD
 
 ## Components
 
+All components live in the plugin at `plugins/codex-bridge/`:
+
 | Component | What it does |
 |---|---|
-| `skill/to-codex/` | Claude Code skill: locate the live transcript, clickable model pick, transfer, open in Codex |
+| `skills/to-codex/` | Claude Code skill: locate the live transcript, clickable model pick, transfer, open in Codex |
 | `scripts/transfer-to-codex.ps1` | The engine: import via codex-plugin-cc, verify the thread independently, launch app / VS Code / terminal |
 | `scripts/codex-thread-query.py` | Read-only queries against Codex state (newest thread, import ledger lookups, thread cwd) |
 | `scripts/switch-to-codex.ps1` | GUI launcher: recent-session picker + model + effort + destination. No Claude tokens needed |
 | `scripts/setup-parity.ps1` | Keeps Codex in parity: installs your flattened AGENTS.md, syncs skills with adaptation-safe manifest logic |
-| `AGENTS.md.example` | A complete, real-world example of flattened cross-agent instructions (including a full operating manual) |
+| `AGENTS.md.example` (repo root) | A complete, real-world example of flattened cross-agent instructions (including a full operating manual) |
+| `tools/make-demo.py` (repo root) | Regenerates the README demo animation - fully synthetic, no screen recording |
 
 ## Quick Start
 
@@ -90,30 +98,35 @@ claude plugin marketplace add openai/codex-plugin-cc
 claude plugin install codex@openai-codex
 ```
 
-### Option 1 — Full kit (recommended)
+### Option 1 — Install as a Claude Code plugin (recommended, one-time)
+```bash
+claude plugin marketplace add AndrewAvery7/claude-codex-bridge
+```
+```bash
+claude plugin install codex-bridge@claude-codex-bridge
+```
+That's it. In any Claude Code session: **`/to-codex`** — scripts and skill ship
+with the plugin and update automatically.
+
+### Option 2 — Manual install
 ```powershell
 git clone https://github.com/AndrewAvery7/claude-codex-bridge.git
-Copy-Item -Recurse claude-codex-bridge\scripts "$env:USERPROFILE\.claude\codex-parity"
-Copy-Item -Recurse claude-codex-bridge\skill\to-codex "$env:USERPROFILE\.claude\skills\to-codex"
+Copy-Item -Recurse claude-codex-bridge\plugins\codex-bridge\scripts "$env:USERPROFILE\.claude\codex-parity"
+Copy-Item -Recurse claude-codex-bridge\plugins\codex-bridge\skills\to-codex "$env:USERPROFILE\.claude\skills\to-codex"
 ```
-Create your `AGENTS.md` from `AGENTS.md.example`, then:
-```powershell
-powershell -ExecutionPolicy Bypass -File "$env:USERPROFILE\.claude\codex-parity\setup-parity.ps1"
-```
-Optionally create a desktop shortcut to `switch-to-codex.ps1` (see [docs/DESIGN.md](docs/DESIGN.md#desktop-launcher)).
-Then, in any Claude Code session: **`/to-codex`**.
+Optionally create a desktop shortcut to `switch-to-codex.ps1` (see [docs/DESIGN.md](docs/DESIGN.md#the-desktop-launcher)) for switching without any Claude tokens.
 
-### Option 2 — Transfer engine only
-Skip parity; just get reliable session hand-off:
+### Option 3 — Transfer engine only
+Skip the skill; just get reliable session hand-off from any shell:
 ```powershell
-powershell -File scripts\transfer-to-codex.ps1 -Source "<path-to-claude-session.jsonl>" -Model gpt-5.6-sol
+powershell -File plugins\codex-bridge\scripts\transfer-to-codex.ps1 -Source "<path-to-claude-session.jsonl>" -Model gpt-5.6-sol
 ```
 The source must live under `~/.claude/projects` (importer requirement). `-OpenIn auto|app|vscode|terminal|none`.
 
-### Option 3 — Parity sync only
-Just make Codex mirror your Claude Code skills and instructions:
+### Option 4 — Workbench parity sync
+Make Codex mirror your Claude Code skills and instructions (see `AGENTS.md.example`):
 ```powershell
-powershell -File scripts\setup-parity.ps1 -SanityCLIs @('your-cli-1','your-cli-2')
+powershell -File plugins\codex-bridge\scripts\setup-parity.ps1 -SanityCLIs @('your-cli-1','your-cli-2')
 ```
 
 ## Good to know

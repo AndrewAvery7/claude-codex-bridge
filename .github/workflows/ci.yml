@@ -1,0 +1,58 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  lint-powershell:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: PSScriptAnalyzer
+        shell: pwsh
+        run: |
+          Install-Module PSScriptAnalyzer -Force -Scope CurrentUser
+          $results = Invoke-ScriptAnalyzer -Path plugins/codex-bridge/scripts -Recurse -Severity Error
+          $results | Format-Table -AutoSize
+          if ($results.Count -gt 0) { exit 1 }
+      - name: PowerShell 5.1 parse check
+        shell: powershell
+        run: |
+          $errs = @()
+          Get-ChildItem plugins/codex-bridge/scripts/*.ps1 | ForEach-Object {
+            $t = $null; $e = $null
+            [void][System.Management.Automation.Language.Parser]::ParseFile($_.FullName, [ref]$t, [ref]$e)
+            if ($e.Count -gt 0) { $errs += "$($_.Name): $($e[0].Message)" }
+          }
+          if ($errs) { $errs | ForEach-Object { Write-Error $_ }; exit 1 }
+          Write-Host "All scripts parse under Windows PowerShell 5.1"
+      - name: ASCII guard (PS 5.1 reads BOM-less UTF-8 as ANSI)
+        shell: pwsh
+        run: |
+          $bad = Get-ChildItem plugins/codex-bridge/scripts/*.ps1 | Where-Object {
+            (Get-Content $_.FullName -Raw -Encoding Byte | Where-Object { $_ -gt 127 }).Count -gt 0
+          }
+          if ($bad) { $bad | ForEach-Object { Write-Error "Non-ASCII bytes in $($_.Name)" }; exit 1 }
+          Write-Host "All .ps1 files are pure ASCII"
+
+  lint-python:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Compile check
+        run: python -m py_compile plugins/codex-bridge/scripts/codex-thread-query.py tools/make-demo.py
+
+  validate-manifests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: JSON validity
+        run: |
+          python -m json.tool .claude-plugin/marketplace.json > /dev/null
+          python -m json.tool plugins/codex-bridge/.claude-plugin/plugin.json > /dev/null
+          echo "Manifests valid"

@@ -1,0 +1,12 @@
+{
+  "name": "codex-bridge",
+  "version": "1.1.0",
+  "description": "Hand a live Claude Code session to OpenAI Codex - /to-codex transfers the conversation and opens the Codex desktop app, VS Code panel, or terminal directly on the thread. Windows.",
+  "author": {
+    "name": "AndrewAvery7"
+  },
+  "homepage": "https://github.com/AndrewAvery7/claude-codex-bridge",
+  "repository": "https://github.com/AndrewAvery7/claude-codex-bridge",
+  "license": "MIT",
+  "keywords": ["codex", "openai", "handoff", "session-transfer", "windows"]
+}

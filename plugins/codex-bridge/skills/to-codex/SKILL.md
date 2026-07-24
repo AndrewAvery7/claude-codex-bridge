@@ -7,8 +7,20 @@ description: "Switch the current Claude Code session to Codex - transfers this c
 
 Transfers the CURRENT Claude Code session into a Codex thread (via the official
 codex-plugin-cc importer) and opens Codex directly on it, on a model the user
-picks. Requires the claude-codex-bridge scripts installed at
-`~/.claude/codex-parity/` (see the repo README).
+picks.
+
+## Step 0. Resolve the bridge scripts directory
+The scripts ship with this plugin. Resolve `$BRIDGE` first and use it in every
+command below:
+
+```powershell
+$BRIDGE = if ($env:CLAUDE_PLUGIN_ROOT) { Join-Path $env:CLAUDE_PLUGIN_ROOT 'scripts' } else { "$env:USERPROFILE\.claude\codex-parity" }
+```
+
+(Plugin installs set `CLAUDE_PLUGIN_ROOT`; the fallback covers manual installs
+that copied the scripts to `~/.claude/codex-parity`.) If
+`$BRIDGE\transfer-to-codex.ps1` does not exist, STOP and tell the user the
+bridge scripts are missing.
 
 ## Steps
 
@@ -40,7 +52,7 @@ reasoning effort unless the user raises it; if they do, pass
 
 ### 3. Transfer and open
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File "$env:USERPROFILE\.claude\codex-parity\transfer-to-codex.ps1" -Source "<transcript-path>" -Model "<model-id>"
+powershell -NoProfile -ExecutionPolicy Bypass -File "$BRIDGE\transfer-to-codex.ps1" -Source "<transcript-path>" -Model "<model-id>"
 ```
 Run it exactly like that — do NOT pass `-OpenIn` unless the user asked for a
 specific destination. The default (`auto`) opens the OpenAI Codex desktop app
@@ -63,11 +75,9 @@ them the transfer is a snapshot — anything said in Claude after the transfer i
 not in the Codex thread.
 
 ## Notes
-- Requires: Codex CLI (`npm i -g @openai/codex` from a regular terminal),
+- Requires: Codex CLI (`npm i -g @openai/codex` from a regular terminal) and
   codex-plugin-cc (`claude plugin marketplace add openai/codex-plugin-cc` +
-  `claude plugin install codex@openai-codex`), and the bridge scripts at
-  `~/.claude/codex-parity/`.
+  `claude plugin install codex@openai-codex`).
 - The transcript must live under `~/.claude/projects` (importer requirement).
 - Desktop alternative when Claude Code is out of tokens: a shortcut to
-  `~/.claude/codex-parity/switch-to-codex.ps1` (session picker; no Claude
-  tokens needed).
+  `$BRIDGE\switch-to-codex.ps1` (session picker; no Claude tokens needed).

@@ -1,5 +1,24 @@
 # Changelog
 
+## 1.1.0 — 2026-07-24
+
+### Added
+- **Claude Code plugin marketplace**: install with
+  `claude plugin marketplace add AndrewAvery7/claude-codex-bridge` +
+  `claude plugin install codex-bridge@claude-codex-bridge` — no manual copying;
+  skill and scripts ship together and update automatically
+- **Animated demo** (`assets/demo.gif` / `.mp4`) at the top of the README —
+  fully synthetic, regenerable via `tools/make-demo.py`
+- CI: PSScriptAnalyzer + PowerShell 5.1 parse check + ASCII guard +
+  Python compile + manifest validation
+- Issue templates and Discussions
+
+### Changed
+- Repo restructured into plugin layout: scripts and skill now live under
+  `plugins/codex-bridge/` (manual-install paths updated in the README)
+- Skill resolves its scripts via `CLAUDE_PLUGIN_ROOT` with a
+  `~/.claude/codex-parity` fallback for manual installs
+
 ## 1.0.0 — 2026-07-24
 
 Initial public release. Everything below was built, broken, diagnosed, and

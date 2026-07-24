@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Question or discussion
+    url: https://github.com/AndrewAvery7/claude-codex-bridge/discussions
+    about: For questions, setup help, and ideas that aren't yet concrete feature requests
