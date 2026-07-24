@@ -1,5 +1,8 @@
 <p align="center">
-  <img src="assets/logo.svg" alt="claude-codex-bridge" width="420" />
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/logo-dark.png">
+    <img src="assets/logo.png" alt="claude-codex-bridge" width="540">
+  </picture>
 </p>
 
 <p align="center">
