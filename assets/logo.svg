@@ -7,7 +7,7 @@
   </defs>
   <rect x="16" y="30" width="110" height="80" rx="18" fill="#D97757"/>
   <text x="71" y="83" font-family="Segoe UI, Arial, sans-serif" font-size="34" font-weight="700" fill="#fff" text-anchor="middle">CC</text>
-  <path d="M149 52 L 171 70 L 149 88" fill="none" stroke="url(#g)" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M141 52 L 163 70 L 141 88" fill="none" stroke="url(#g)" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
   <rect x="194" y="30" width="110" height="80" rx="18" fill="#10A37F"/>
   <text x="249" y="83" font-family="Segoe UI, Arial, sans-serif" font-size="34" font-weight="700" fill="#fff" text-anchor="middle">CX</text>
   <text x="330" y="76" font-family="Segoe UI, Arial, sans-serif" font-size="42" font-weight="650" fill="#333">
