@@ -22,7 +22,7 @@ https://github.com/user-attachments/assets/9fa13cef-8a95-46d0-8ee9-57965a60c714
 <p align="center">
   <i>65 seconds &mdash; press play, and hit &#128266; to unmute (GitHub starts videos silent).</i>
   &nbsp;·&nbsp;
-  <a href="https://github.com/AndrewAvery7/claude-codex-bridge/releases/download/v1.1.0/claude-codex-bridge-promo.mp4">Download the MP4</a>
+  <a href="https://github.com/AndrewAvery7/claude-codex-bridge/releases/latest/download/claude-codex-bridge-promo.mp4">Download the MP4</a>
 </p>
 
 ---
