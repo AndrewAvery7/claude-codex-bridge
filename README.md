@@ -22,8 +22,10 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/AndrewAvery7/claude-codex-bridge/releases/download/v1.1.0/claude-codex-bridge-promo.mp4"><b>&#9654;&nbsp; Watch the full walkthrough</b></a>
-  &nbsp;·&nbsp; 65s, with sound
+  <i>The full 65-second walkthrough, with sound:</i>
+  <a href="https://github.com/AndrewAvery7/claude-codex-bridge/discussions/4"><b>watch it here</b></a>
+  &nbsp;·&nbsp;
+  <a href="https://github.com/AndrewAvery7/claude-codex-bridge/releases/download/v1.1.0/claude-codex-bridge-promo.mp4">download the MP4</a>
 </p>
 
 ---
