@@ -7,8 +7,15 @@
   `claude plugin marketplace add AndrewAvery7/claude-codex-bridge` +
   `claude plugin install codex-bridge@claude-codex-bridge` — no manual copying;
   skill and scripts ship together and update automatically
-- **Animated demo** (`assets/demo.gif` / `.mp4`) at the top of the README —
-  fully synthetic, regenerable via `tools/make-demo.py`
+- **Promo video** (65s, 1080p, attached to this release) built as a hybrid:
+  generative-video bookends for the cinematic opener and title card, and a
+  motion-graphics core (`tools/make-promo.py`) for every scene containing exact
+  text — commands are rendered from source, so they can never be misspelled.
+  `tools/stitch-promo.sh` assembles the two with staged audio (the opener keeps
+  its own native audio; the music bed enters afterwards and is loudness-
+  normalised so it stays present throughout).
+- **Animated demo** (`assets/demo.gif`) at the top of the README, cut from the
+  promo itself so the preview matches the real video
 - CI: PSScriptAnalyzer + PowerShell 5.1 parse check + ASCII guard +
   Python compile + manifest validation
 - Issue templates and Discussions

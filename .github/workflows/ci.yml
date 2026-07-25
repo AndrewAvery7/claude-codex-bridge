@@ -45,7 +45,7 @@ jobs:
         with:
           python-version: "3.11"
       - name: Compile check
-        run: python -m py_compile plugins/codex-bridge/scripts/codex-thread-query.py tools/make-demo.py
+        run: python -m py_compile plugins/codex-bridge/scripts/codex-thread-query.py tools/make-promo.py
 
   validate-manifests:
     runs-on: ubuntu-latest

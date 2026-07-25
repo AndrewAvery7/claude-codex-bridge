@@ -21,6 +21,11 @@
   <img src="assets/demo.gif" alt="to-codex demo: type /to-codex, pick a model, and the Codex desktop app opens on your transferred conversation" width="800">
 </p>
 
+<p align="center">
+  <a href="https://github.com/AndrewAvery7/claude-codex-bridge/releases/download/v1.1.0/claude-codex-bridge-promo.mp4"><b>&#9654;&nbsp; Watch the full walkthrough</b></a>
+  &nbsp;·&nbsp; 65s, with sound
+</p>
+
 ---
 
 Running out of Claude Code tokens mid-task? Want a second model's opinion with your whole working context? **claude-codex-bridge** turns "switch to Codex" into a single step:
@@ -82,7 +87,8 @@ All components live in the plugin at `plugins/codex-bridge/`:
 | `scripts/switch-to-codex.ps1` | GUI launcher: recent-session picker + model + effort + destination. No Claude tokens needed |
 | `scripts/setup-parity.ps1` | Keeps Codex in parity: installs your flattened AGENTS.md, syncs skills with adaptation-safe manifest logic |
 | `AGENTS.md.example` (repo root) | A complete, real-world example of flattened cross-agent instructions (including a full operating manual) |
-| `tools/make-demo.py` (repo root) | Regenerates the README demo animation - fully synthetic, no screen recording |
+| `tools/make-promo.py` (repo root) | Renders the promo's motion-graphics core - every command string comes from source, so it is always exact |
+| `tools/stitch-promo.sh` (repo root) | Assembles the finished promo (AI bookends + motion-graphics core + audio staging) |
 
 ## Quick Start
 
