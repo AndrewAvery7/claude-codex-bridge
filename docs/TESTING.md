@@ -15,7 +15,7 @@ machine on 2026-07-24, against these versions:
 Identifiers below are synthesized (`0199aaaa-...`) — the shapes and outcomes
 are as observed.
 
-## Transfer engine (`transfer-to-codex.ps1`)
+## Transfer engine — PowerShell era (superseded by `codex_bridge.py` in v1.2.0)
 
 | # | Scenario | Method | Result |
 |---|---|---|---|
@@ -36,7 +36,7 @@ are as observed.
 | O3 | `-OpenIn auto` selection | Engine run with no flag on a machine with the desktop app installed | Chose the desktop app; printed "Opened the Codex desktop app on this thread" |
 | O4 | Terminal fallback path | User-reported failure before the PATH fix; re-verified after | Pre-fix: `codex not recognized` in spawned shell (container PATH trap). Post-fix: absolute path embedded; vendored exe runs from any shell |
 
-## Skills & parity (`setup-parity.ps1`)
+## Skills & parity — PowerShell era (now `codex_bridge.py sync`)
 
 | # | Scenario | Method | Result |
 |---|---|---|---|
@@ -66,8 +66,26 @@ O4 and the re-run that confirmed its fix.
 
 ## What is NOT covered
 
-- macOS/Linux (kit is Windows-specific as shipped)
+- macOS/Linux runtime confirmation (see the v1.2.0 section below)
 - Non-MSIX Claude installs (the PATH-trap fallback chain should be a no-op —
   `Get-Command codex` wins — but this exact configuration wasn't exercised)
 - Future Codex versions: the state DB schema, ledger format, and deep-link
   routes are undocumented internals (see README caveats)
+
+## Cross-platform engine (v1.2.0)
+
+| # | Scenario | Method | Result |
+|---|---|---|---|
+| X1 | Engine detects its environment | `codex_bridge.py doctor` on Windows | Resolved the vendored codex.exe inside the app container (which `shutil.which` could NOT find), the importer, both Codex state files, and `auto` -> desktop app |
+| X2 | Fresh import via the Python engine | Real never-imported transcript | New thread created and titled ("Day of week trading analysis report") |
+| X3 | Dedupe-reuse via the Python engine | Re-ran an already-imported transcript | Reused the existing thread and said so |
+| X4 | Importer PATH injection | Fresh import failed first with "Codex CLI is not installed"; retried after injecting the resolved binary's directory into the child PATH | Failed before the fix, succeeded after - see the Fixed note in CHANGELOG 1.2.0 |
+| X5 | Windows path rules tested off-Windows | Reload the module with `sys.platform` patched, then assert prefix stripping, UNC handling, case-insensitivity, and that different paths still differ | 5 tests pass on every CI OS |
+| X6 | State DB is read-only | Open via the engine and attempt an INSERT | `sqlite3.OperationalError` - write rejected |
+| X7 | Graceful degradation | Missing state DB, missing/corrupt ledger, unreadable transcript | Returns 0 / None / "(no preview)" instead of raising |
+| X8 | Invalid source rejected | `transfer --source README.md` (outside ~/.claude/projects) | Non-zero exit with a clear message; asserted in CI |
+| X9 | CLI surface | `--help` for every subcommand on all three OSes | Green in CI (ubuntu / macOS / windows, Python 3.9 and 3.12) |
+
+**Not covered:** the macOS and Linux protocol-handler and terminal-launch paths
+have not been run against a real Codex install. They are implemented and
+CI-exercised; confirmation is welcome via an issue.

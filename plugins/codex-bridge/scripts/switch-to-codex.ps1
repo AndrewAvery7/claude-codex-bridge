@@ -2,16 +2,35 @@
 # (Windows PowerShell 5.1 compatible, ASCII only. Needs NO Claude tokens - works
 #  even when Claude Code is rate-limited or closed.)
 #
-# Shows a small window: pick a recent Claude Code session + a Codex model,
-# then transfers the session and opens Windows Terminal resumed into it.
+# Shows a small window: pick a recent Claude Code session, a Codex model, and
+# where to open it, then hands off to the cross-platform engine (codex_bridge.py)
+# to do the actual transfer.
+#
+# This file is only the native Windows GUI. All transfer logic lives in
+# codex_bridge.py so there is exactly one implementation to keep correct - on
+# macOS and Linux use `python codex_bridge.py pick` for the same flow in a
+# terminal.
 #
 #   -ListOnly   headless mode: print the sessions and models that would be shown
 
 param([switch]$ListOnly)
 $ErrorActionPreference = 'Stop'
 $parityDir   = Split-Path -Parent $MyInvocation.MyCommand.Path
-$transferPs1 = Join-Path $parityDir 'transfer-to-codex.ps1'
+$engine      = Join-Path $parityDir 'codex_bridge.py'
 $projects    = Join-Path $env:USERPROFILE '.claude\projects'
+
+if (-not (Test-Path $engine)) {
+    Write-Host "ERROR: engine not found at $engine" -ForegroundColor Red
+    exit 1
+}
+$python = $null
+foreach ($cand in 'python', 'python3', 'py') {
+    if (Get-Command $cand -ErrorAction SilentlyContinue) { $python = $cand; break }
+}
+if (-not $python) {
+    Write-Host "ERROR: Python 3.9+ is required and was not found on PATH." -ForegroundColor Red
+    exit 1
+}
 
 # ---------- gather recent Claude sessions ----------
 function Get-SessionSnippet($jsonlPath) {
@@ -117,8 +136,12 @@ $chosen = $sessions[$list.SelectedIndex]
 $model  = $combo.SelectedItem
 $effort = $combo2.SelectedItem
 $openIn = @('app','vscode','terminal')[$combo3.SelectedIndex]
-$args = @('-NoProfile','-ExecutionPolicy','Bypass','-File', $transferPs1, '-Source', $chosen.Path, '-Model', $model, '-OpenIn', $openIn)
-if ($effort -ne '(config default)') { $args += @('-Effort', $effort) }
 
-# Run the transfer in a visible console so progress/errors are seen
-Start-Process powershell -ArgumentList $args
+# Hand off to the cross-platform engine. Keep the console open afterwards so the
+# thread id and the fallback resume command stay readable.
+$engineArgs = @($engine, 'transfer', '--source', $chosen.Path, '--model', $model, '--open', $openIn)
+if ($effort -ne '(config default)') { $engineArgs += @('--effort', $effort) }
+$quoted = ($engineArgs | ForEach-Object { '"' + $_ + '"' }) -join ' '
+Start-Process powershell -ArgumentList @(
+    '-NoProfile', '-NoExit', '-Command', "& $python $quoted"
+)

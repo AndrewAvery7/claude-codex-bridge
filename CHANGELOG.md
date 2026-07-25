@@ -1,5 +1,36 @@
 # Changelog
 
+## 1.2.0 - 2026-07-25
+
+### Added
+- **Cross-platform engine** (`plugins/codex-bridge/scripts/codex_bridge.py`).
+  One Python file replaces the PowerShell transfer/sync scripts and runs on
+  Windows, macOS and Linux. Subcommands: `transfer`, `pick` (terminal session
+  picker), `sync` (AGENTS.md + skills parity), `doctor` (environment report).
+- **Test suite** (`tests/test_codex_bridge.py`, 14 tests). The Windows path
+  rules are pure functions, so they are tested on every OS by reloading the
+  module with `sys.platform` patched - including a test asserting the Codex
+  state DB is opened read-only and rejects writes.
+- **CI matrix**: tests now run on ubuntu / macOS / windows against Python 3.9
+  and 3.12, plus shellcheck, PSScriptAnalyzer, an ASCII guard, and a manifest
+  check that fails if the marketplace and plugin versions disagree.
+- `doctor` reports the resolved codex binary, importer path, Codex state paths
+  and which surface `auto` would open - the fastest way to diagnose a bad setup.
+
+### Fixed
+- **The importer could not find `codex` even when the engine could.** It runs its
+  own availability check, so inheriting PATH was not enough: an `npm -g` install
+  inside a packaged app is invisible to child processes and the importer aborted
+  with "Codex CLI is not installed". The engine now injects the resolved binary's
+  directory into the importer's PATH. This affected fresh imports.
+
+### Changed
+- `switch-to-codex.ps1` remains the native Windows GUI but now calls the shared
+  engine, so there is one implementation of the transfer logic rather than two
+  that can drift.
+- Removed `transfer-to-codex.ps1` and `setup-parity.ps1`, superseded by the
+  engine. Manual-install and engine-only instructions in the README updated.
+
 ## 1.1.0 — 2026-07-24
 
 ### Added

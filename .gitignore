@@ -7,3 +7,8 @@ AGENTS.md
 
 # Backups the installer creates
 *.bak-*
+
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/

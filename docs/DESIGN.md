@@ -33,7 +33,7 @@ source paths with Windows extended-length prefixes (`\\?\C:\...`), and the
 plugin's path comparison doesn't normalize them.
 
 **Design consequence:** never trust the plugin's message. After invoking the
-importer, `transfer-to-codex.ps1` verifies the outcome independently:
+importer, the engine verifies the outcome independently:
 
 - snapshot `MAX(created_at)` from the `threads` table in `~/.codex/state_5.sqlite`
   (opened read-only, always)
@@ -65,7 +65,7 @@ the container: for it, neither the PATH entry nor (depending on virtualization)
 the files exist. Result: `codex : The term 'codex' is not recognized...`
 
 **Design consequence:** never emit a bare `codex` in a command another shell
-will run. `Resolve-CodexCommand` prefers the **standalone vendored
+will run. `codex_command()` prefers the **standalone vendored
 `codex.exe`** inside the container's `LocalCache` backing store — which is a
 real directory on disk, readable by every process, and needs no Node — and
 embeds the absolute path. A genuinely global install (done from a normal
@@ -82,7 +82,7 @@ respective app bundles:
 | VS Code Codex panel | `vscode://openai.chatgpt/local/<thread-id>` | The extension's `handleUri` forwards the URI path into its webview router; the router serves local threads at `/local/<id>` |
 | Terminal TUI | `codex resume <id> [-m model]` from the thread's working directory (read from the state DB) | Documented CLI |
 
-The engine's `-OpenIn auto` prefers the desktop app when its protocol is
+The engine's `--open auto` prefers the desktop app when its protocol is
 registered, then VS Code, then the terminal.
 
 **Model selection nuance:** `-m` is honored by the CLI per invocation. The
@@ -170,3 +170,54 @@ $lnk.Save()
   having the ReparsePoint attribute.
 - **Snapshots, not live links:** a transferred thread does not follow the
   Claude session afterward. The kit says this on every transfer.
+
+## Going cross-platform (v1.2.0)
+
+The original engine was PowerShell, because the bug it works around is a Windows
+bug. That capped the addressable audience: the AI-coding-tool crowd skews heavily
+macOS, and a Windows-only tool is invisible to most of it.
+
+Almost everything load-bearing was already portable — the importer is Node, the
+state store is SQLite, the ledger is JSON, and the deep links are URL protocols.
+Only the shell around them was Windows-specific. So the engine became a single
+Python file with the OS differences isolated in four functions:
+
+| Function | Windows | macOS | Linux |
+|---|---|---|---|
+| `normalize_ledger_path` | strip the extended-length prefix, case-fold | identity | identity |
+| `codex_command` | prefer the vendored exe in the app container's LocalCache | `which`, then common npm/brew locations | same as macOS |
+| `open_url` | `os.startfile` | `open` | `xdg-open` |
+| `launch_terminal` | Windows Terminal, else `cmd` | AppleScript to Terminal.app | `x-terminal-emulator`, gnome-terminal, konsole, xfce4-terminal, xterm |
+
+Because those are pure or thinly-wrapped functions, the Windows path rules are
+testable **on Linux** by reloading the module with `sys.platform` patched — which
+is exactly what the CI matrix does. That gives real coverage of the
+extended-length-prefix logic on machines that have never seen a Windows path.
+
+### One bug the port surfaced
+
+Porting exposed a defect the PowerShell version had been getting away with by
+accident. The importer runs its **own** `codex` availability check, so it is not
+enough for the engine to know where the binary is — the child process has to be
+able to find it too. With an `npm -g` install inside a packaged app, it cannot,
+and the importer aborts with "Codex CLI is not installed" on what would otherwise
+be a successful fresh import. The engine now prepends the resolved binary's
+directory to the importer's `PATH`.
+
+The general lesson, which is the same one behind the false-failure bug: knowing a
+fact yourself is not the same as the process you delegate to knowing it.
+
+### What is verified, where
+
+Stated plainly because the distinction matters:
+
+- **Windows:** full transfer flow verified end-to-end, both the fresh-import and
+  the dedupe-reuse paths, plus `doctor`, the GUI launcher, and parity sync.
+- **macOS / Linux:** implemented, and the test suite plus CLI surface run green in
+  CI on both. Not yet confirmed against a real Codex install on those platforms —
+  specifically the protocol handler (`open` / `xdg-open`) and the terminal
+  launchers. Reports either way are genuinely useful.
+
+The `codex resume <id>` command printed on every transfer is the fallback that
+works regardless of platform, which is why it is always printed rather than only
+shown on failure.

@@ -11,8 +11,8 @@
 
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green.svg" alt="MIT license"></a>
-  <img src="https://img.shields.io/badge/platform-Windows%20(macOS%2FLinux%20PRs%20welcome)-blue.svg" alt="Windows">
-  <img src="https://img.shields.io/badge/PowerShell-5.1%2B-blue.svg" alt="PowerShell 5.1+">
+  <img src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-blue.svg" alt="Windows, macOS, Linux">
+  <img src="https://img.shields.io/badge/python-3.9%2B-blue.svg" alt="Python 3.9+">
   <img src="https://img.shields.io/badge/status-tested%20end--to--end-brightgreen.svg" alt="Tested">
   <a href="https://github.com/openai/codex-plugin-cc/pull/551"><img src="https://img.shields.io/badge/upstream%20fix-codex--plugin--cc%20%23551-orange.svg" alt="Upstream PR"></a>
 </p>
@@ -65,7 +65,7 @@ flowchart LR
 
 ```mermaid
 flowchart TD
-    subgraph "Workbench parity (setup-parity.ps1)"
+    subgraph "Workbench parity (codex_bridge.py sync)"
         I["~/.claude/skills"] -->|"manifest-based sync"| J["~/.agents/skills (cross-tool root)"]
         K["CLAUDE.md + your operating manual"] -->|"flatten (Codex ignores @includes)"| L["~/.codex/AGENTS.md"]
         M["MCP servers (e.g. a personal memory server)"] --> N["~/.codex/config.toml"]
@@ -81,10 +81,9 @@ All components live in the plugin at `plugins/codex-bridge/`:
 | Component | What it does |
 |---|---|
 | `skills/to-codex/` | Claude Code skill: locate the live transcript, clickable model pick, transfer, open in Codex |
-| `scripts/transfer-to-codex.ps1` | The engine: import via codex-plugin-cc, verify the thread independently, launch app / VS Code / terminal |
-| `scripts/codex-thread-query.py` | Read-only queries against Codex state (newest thread, import ledger lookups, thread cwd) |
-| `scripts/switch-to-codex.ps1` | GUI launcher: recent-session picker + model + effort + destination. No Claude tokens needed |
-| `scripts/setup-parity.ps1` | Keeps Codex in parity: installs your flattened AGENTS.md, syncs skills with adaptation-safe manifest logic |
+| `scripts/codex_bridge.py` | **The engine** (cross-platform). `transfer` imports and verifies a session then opens Codex; `pick` is a terminal session picker; `sync` keeps Codex in parity; `doctor` reports what it detects |
+| `scripts/codex-thread-query.py` | Standalone read-only queries against Codex state, for scripting |
+| `scripts/switch-to-codex.ps1` | Native Windows GUI launcher (session + model + destination) that calls the engine. No Claude tokens needed |
 | `AGENTS.md.example` (repo root) | A complete, real-world example of flattened cross-agent instructions (including a full operating manual) |
 | `tools/make-promo.py` (repo root) | Renders the promo's motion-graphics core - every command string comes from source, so it is always exact |
 | `tools/stitch-promo.sh` (repo root) | Assembles the finished promo (AI bookends + motion-graphics core + audio staging) |
@@ -92,7 +91,7 @@ All components live in the plugin at `plugins/codex-bridge/`:
 ## Quick Start
 
 ### Prerequisites
-- Windows, PowerShell 5.1+, Python 3.x, Node 18.18+
+- Python 3.9+ and Node 18.18+ (Windows, macOS, or Linux)
 - [Codex CLI](https://developers.openai.com/codex) (`npm i -g @openai/codex`) with a ChatGPT subscription or OpenAI API key
 - [Claude Code](https://claude.com/claude-code)
 - The official plugin (the transfer engine):
@@ -119,19 +118,27 @@ git clone https://github.com/AndrewAvery7/claude-codex-bridge.git
 Copy-Item -Recurse claude-codex-bridge\plugins\codex-bridge\scripts "$env:USERPROFILE\.claude\codex-parity"
 Copy-Item -Recurse claude-codex-bridge\plugins\codex-bridge\skills\to-codex "$env:USERPROFILE\.claude\skills\to-codex"
 ```
-Optionally create a desktop shortcut to `switch-to-codex.ps1` (see [docs/DESIGN.md](docs/DESIGN.md#the-desktop-launcher)) for switching without any Claude tokens.
+On macOS/Linux, copy the same two directories to `~/.claude/codex-parity` and
+`~/.claude/skills/to-codex`.
+
+For switching without any Claude tokens: on Windows create a desktop shortcut to
+`switch-to-codex.ps1` (see [docs/DESIGN.md](docs/DESIGN.md#the-desktop-launcher));
+anywhere else run `python codex_bridge.py pick` for the same picker in a terminal.
 
 ### Option 3 — Transfer engine only
 Skip the skill; just get reliable session hand-off from any shell:
-```powershell
-powershell -File plugins\codex-bridge\scripts\transfer-to-codex.ps1 -Source "<path-to-claude-session.jsonl>" -Model gpt-5.6-sol
+```bash
+python plugins/codex-bridge/scripts/codex_bridge.py transfer --source "<path-to-claude-session.jsonl>" --model gpt-5.6-sol
 ```
-The source must live under `~/.claude/projects` (importer requirement). `-OpenIn auto|app|vscode|terminal|none`.
+The source must live under `~/.claude/projects` (importer requirement).
+`--open auto|app|vscode|terminal|none`. Start with
+`python plugins/codex-bridge/scripts/codex_bridge.py doctor` — it prints the codex
+binary it resolved, the importer it found, and where `auto` would open a thread.
 
 ### Option 4 — Workbench parity sync
 Make Codex mirror your Claude Code skills and instructions (see `AGENTS.md.example`):
-```powershell
-powershell -File plugins\codex-bridge\scripts\setup-parity.ps1 -SanityCLIs @('your-cli-1','your-cli-2')
+```bash
+python plugins/codex-bridge/scripts/codex_bridge.py sync --agents-md ./AGENTS.md --check-cli your-cli-1 your-cli-2
 ```
 
 ## Good to know
@@ -150,7 +157,12 @@ powershell -File plugins\codex-bridge\scripts\setup-parity.ps1 -SanityCLIs @('yo
 PowerShell 5.1 · Python 3 · [codex-plugin-cc](https://github.com/openai/codex-plugin-cc) (Apache-2.0, the transfer engine) · [Codex CLI](https://developers.openai.com/codex) · [Agent Skills open standard](https://agentskills.io) (`SKILL.md`) · Codex deep-link protocols (`codex://`, `vscode://openai.chatgpt/`)
 
 ## Caveats (honest edges)
-- **Windows-only** as shipped (paths, PowerShell, MSIX specifics). The design ports to macOS/Linux; PRs welcome.
+- **Platform support is honest about what is verified.** The engine is one
+  cross-platform Python file and CI runs its test suite on Windows, macOS and
+  Linux. The full transfer flow is verified end-to-end **on Windows**; the macOS
+  and Linux code paths (protocol handler via `open`/`xdg-open`, terminal launch)
+  are implemented and CI-checked but await real-world confirmation - please open
+  an issue either way, it is genuinely useful feedback.
 - Relies on **undocumented Codex internals**: the `state_5.sqlite` threads schema, the `external_agent_session_imports.json` ledger, and the deep-link routes. Verified against Codex CLI 0.145 / VS Code extension 26.721 / plugin 1.0.6 — future Codex updates could move these. The terminal resume command printed on every transfer is the always-works fallback.
 - The transfer converts between two different agent formats; the conversation arrives as visible, continuable turns, but tool-call internals are thinned by the importer.
 

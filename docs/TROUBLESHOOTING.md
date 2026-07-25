@@ -35,7 +35,7 @@ re-transfer to get a fresh snapshot.
 ## Every skill shows up twice in Codex's picker
 You have user skills in **both** `~/.codex/skills` and `~/.agents/skills`.
 Remove everything except `.system` from `~/.codex/skills` (if entries are
-junctions, delete only the reparse points — `setup-parity.ps1`'s guard will
+junctions, delete only the reparse points — the sync guard will
 warn you which entries are the problem). Restart the Codex surface afterwards;
 its skill index caches until restart.
 
