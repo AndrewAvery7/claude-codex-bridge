@@ -17,15 +17,12 @@
   <a href="https://github.com/openai/codex-plugin-cc/pull/551"><img src="https://img.shields.io/badge/upstream%20fix-codex--plugin--cc%20%23551-orange.svg" alt="Upstream PR"></a>
 </p>
 
-<p align="center">
-  <img src="assets/demo.gif" alt="to-codex demo: type /to-codex, pick a model, and the Codex desktop app opens on your transferred conversation" width="800">
-</p>
+https://github.com/user-attachments/assets/9fa13cef-8a95-46d0-8ee9-57965a60c714
 
 <p align="center">
-  <i>The full 65-second walkthrough, with sound:</i>
-  <a href="https://github.com/AndrewAvery7/claude-codex-bridge/discussions/4"><b>watch it here</b></a>
+  <i>65 seconds, with sound &mdash; press play above.</i>
   &nbsp;·&nbsp;
-  <a href="https://github.com/AndrewAvery7/claude-codex-bridge/releases/download/v1.1.0/claude-codex-bridge-promo.mp4">download the MP4</a>
+  <a href="https://github.com/AndrewAvery7/claude-codex-bridge/releases/download/v1.1.0/claude-codex-bridge-promo.mp4">Download the MP4</a>
 </p>
 
 ---
@@ -53,6 +50,10 @@ OpenAI's [codex-plugin-cc](https://github.com/openai/codex-plugin-cc) provides `
 | Codex knows your workflow? | Out of scope | Parity sync: flattened instructions + your skills served to Codex from the cross-tool `~/.agents/skills` root |
 
 ## See it in action
+
+<p align="center">
+  <img src="assets/demo.gif" alt="Highlights: the context limit, typing /to-codex, picking a model, the verified transfer, and Codex opening on the same conversation" width="760">
+</p>
 
 ```mermaid
 flowchart LR
