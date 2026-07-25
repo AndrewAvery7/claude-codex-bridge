@@ -1,0 +1,32 @@
+# Normalise line endings in the repository, and pin what each file type gets on
+# checkout. This matters here for real reasons, not tidiness:
+#   * Shell scripts MUST be LF. A .sh checked out with CRLF fails on macOS/Linux
+#     with "bad interpreter: /usr/bin/env bash^M" - which would break the exact
+#     platform ports we are asking contributors for.
+#   * PowerShell scripts are pinned to CRLF, the native Windows convention.
+#   * Binary assets are marked so Git never tries to "fix" their line endings
+#     and so diffs stay readable.
+* text=auto eol=lf
+
+*.sh        text eol=lf
+*.py        text eol=lf
+*.md        text eol=lf
+*.json      text eol=lf
+*.yml       text eol=lf
+*.yaml      text eol=lf
+
+*.ps1       text eol=crlf
+*.psm1      text eol=crlf
+*.cmd       text eol=crlf
+*.bat       text eol=crlf
+
+*.png       binary
+*.gif       binary
+*.jpg       binary
+*.mp4       binary
+*.wav       binary
+*.mp3       binary
+
+# Keep generated media and tooling out of language statistics so the repo is
+# reported as what it actually is.
+assets/**   linguist-documentation

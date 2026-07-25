@@ -1,0 +1,28 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 2
+
+[*.py]
+indent_size = 4
+max_line_length = 100
+
+# PowerShell is Windows-native here and the scripts must stay ASCII-only:
+# PS 5.1 reads BOM-less UTF-8 as ANSI, which turns any non-ASCII character into
+# a parse error.
+[*.ps1]
+end_of_line = crlf
+indent_size = 4
+charset = latin1
+
+[*.md]
+trim_trailing_whitespace = false
+
+[*.{gif,png,jpg,mp4,wav,mp3}]
+trim_trailing_whitespace = false
+insert_final_newline = false
