@@ -19,7 +19,7 @@ plugin:
 | `~/.codex/external_agent_session_imports.json` | read | To detect Codex's unchanged-content dedupe and reuse the existing thread |
 | `~/.codex/AGENTS.md` | write (with timestamped backup) | Installs your flattened instructions, only when content changed |
 | `~/.agents/skills/**` | write | Syncs your skills; never overwrites a copy whose ancestry it cannot prove |
-| `~/.codex/config.toml` | read only | Reads the Second-Brain-style MCP URL host for a reachability check; **secrets are never printed or copied** |
+| `~/.codex/config.toml` | read only | Reads a configured MCP server's URL host for an optional reachability check; **secrets are never printed or copied** |
 
 ## Design choices that matter for security
 
