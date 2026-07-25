@@ -1,10 +1,14 @@
 #!/usr/bin/env bash
-# Build the README highlights GIF from the finished promo.
+# Cut a highlights GIF from the finished promo.
 #
-# Why a GIF at all: GitHub strips <video> tags from README files, and a release
-# asset URL downloads rather than plays. An animated GIF is the only thing that
-# reliably plays inline in a README with zero clicks, so it carries the story
-# while the full MP4 (with sound) lives on the release page.
+# The README itself embeds the MP4 as a real inline player (that works only for
+# videos uploaded to GitHub's attachment CDN - a release asset URL downloads
+# instead of playing), so no GIF is shipped in the repo: at ~3 MB it would have
+# been the heaviest file here while duplicating the video above it.
+#
+# This script is kept because a GIF is still the right format for places that
+# cannot play video - social posts, mirrors, editors - or as a fallback if the
+# embed ever breaks.
 #
 # Usage: tools/make-readme-gif.sh PROMO.mp4 OUT.gif [WIDTH] [FPS]
 set -euo pipefail

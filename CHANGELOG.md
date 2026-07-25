@@ -14,8 +14,10 @@
   `tools/stitch-promo.sh` assembles the two with staged audio (the opener keeps
   its own native audio; the music bed enters afterwards and is loudness-
   normalised so it stays present throughout).
-- **Animated demo** (`assets/demo.gif`) at the top of the README, cut from the
-  promo itself so the preview matches the real video
+- The promo is embedded in the README as an inline player (GitHub only renders
+  one for videos on its attachment CDN, so the MP4 is uploaded there; a release
+  asset URL downloads instead of playing). `tools/make-readme-gif.sh` can cut a
+  highlights GIF from the promo for social posts or as a fallback.
 - CI: PSScriptAnalyzer + PowerShell 5.1 parse check + ASCII guard +
   Python compile + manifest validation
 - Issue templates and Discussions

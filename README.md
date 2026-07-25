@@ -49,11 +49,7 @@ OpenAI's [codex-plugin-cc](https://github.com/openai/codex-plugin-cc) provides `
 | Out of Claude tokens entirely? | Unusable (needs a live Claude session) | Desktop launcher with a session picker — zero Claude tokens involved |
 | Codex knows your workflow? | Out of scope | Parity sync: flattened instructions + your skills served to Codex from the cross-tool `~/.agents/skills` root |
 
-## See it in action
-
-<p align="center">
-  <img src="assets/demo.gif" alt="Highlights: the context limit, typing /to-codex, picking a model, the verified transfer, and Codex opening on the same conversation" width="760">
-</p>
+## How it fits together
 
 ```mermaid
 flowchart LR
