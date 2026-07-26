@@ -4,6 +4,12 @@ on:
   push:
     branches: [main]
   pull_request:
+  # Weekly re-run: re-validates the suite against fresh runner images and
+  # toolchains even when the repo is untouched, and keeps the public Actions
+  # history a living record rather than a snapshot of the last push. (GitHub
+  # pauses scheduled workflows after ~60 days without repo activity.)
+  schedule:
+    - cron: "43 11 * * 1"
 
 jobs:
   # The engine is cross-platform, so prove it on all three OSes rather than

@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+### Added
+- Weekly scheduled CI run (Mondays) on top of push/PR triggers - re-validates
+  the suite against fresh runner images and toolchains even when the repo is
+  untouched, and keeps the public Actions history a living record rather than
+  a snapshot of the last push.
+
 ## 1.2.0 - 2026-07-25
 
 ### Added
