@@ -151,6 +151,7 @@ python plugins/codex-bridge/scripts/codex_bridge.py sync --agents-md ./AGENTS.md
 - [docs/DESIGN.md](docs/DESIGN.md) — architecture and the reasoning behind every workaround: the false-failure diagnosis, the dedupe ledger, the app-container PATH trap, how the deep-link routes were found
 - [docs/TESTING.md](docs/TESTING.md) — the full verification matrix: what was tested, how, and what proved it
 - [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) — common failure modes and exact fixes
+- [docs/PROMO.md](docs/PROMO.md) — how the video above is built, and why its first frame is a title card
 - [CHANGELOG.md](CHANGELOG.md)
 
 ## Technology

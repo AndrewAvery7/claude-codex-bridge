@@ -8,6 +8,13 @@ AGENTS.md
 # Backups the installer creates
 *.bak-*
 
+# Promo video intermediates and output. All regenerable from tools/, and the
+# finished MP4 ships as a release asset rather than bloating every clone.
+# (The sibling repository has had this rule from the start; this one did not,
+# so a 19 MB binary was one `git add -A` away from being committed forever.)
+assets/*.mp4
+assets/*.gif
+
 # Python
 __pycache__/
 *.pyc
