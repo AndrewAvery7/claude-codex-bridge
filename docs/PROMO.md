@@ -1,7 +1,7 @@
 # The promo video
 
-`claude-codex-bridge-promo.mp4` — 1:06, 1920×1080, shipped as a **release
-asset** rather than committed. `assets/*.mp4` is gitignored: at ~19 MB the file
+`claude-codex-bridge-promo.mp4` — 1:05, 1920×1080, shipped as a **release
+asset** rather than committed. `assets/*.mp4` is gitignored: at ~18 MB the file
 would be by far the heaviest thing here, and every rebuild would add another
 copy to history forever.
 

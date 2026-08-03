@@ -7,6 +7,23 @@
   the suite against fresh runner images and toolchains even when the repo is
   untouched, and keeps the public Actions history a living record rather than
   a snapshot of the last push.
+- **The promo opens on a title card**, so the README shows the project rather
+  than a black rectangle. GitHub generates its inline player from a bare
+  `user-attachments` URL and its markdown sanitiser strips author-written
+  `<video>`, so there is no `poster` a README can set - the browser shows frame
+  0, and frame 0 was the generative hero shot before its light builds. The card
+  composites `assets/logo-dark.png` rather than redrawing the mark, and every
+  line on it is already true elsewhere in the repository. `tools/make-title-card.py`
+  builds it; `tools/prepend-title-card.sh` applies it to a finished film, which
+  is how it was applied here - the bookends and music bed that built the original
+  were never committed, and the release asset was the only surviving copy. The
+  video is now 1:05 rather than 1:04, and the release asset has been replaced.
+  See [docs/PROMO.md](docs/PROMO.md), which is also new.
+
+### Fixed
+- `.gitignore` had no rule for `assets/*.mp4`, which the sibling repository has
+  had from the start. The promo is a release asset by design, so an 18 MB binary
+  was one `git add -A` away from being committed to this repository forever.
 
 ## 1.2.0 - 2026-07-25
 
