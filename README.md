@@ -17,10 +17,20 @@
   <a href="https://github.com/openai/codex-plugin-cc/pull/551"><img src="https://img.shields.io/badge/upstream%20fix-codex--plugin--cc%20%23551-orange.svg" alt="Upstream PR"></a>
 </p>
 
-https://github.com/user-attachments/assets/9fa13cef-8a95-46d0-8ee9-57965a60c714
+<!-- PROMO-VIDEO. A bare user-attachments URL on its own line: GitHub turns that
+     into an inline player, and takes the thumbnail from frame 0 — which is why
+     the video opens on a title card. Markdown image or link syntax does NOT
+     produce a player, and a release-asset URL downloads instead of playing.
+
+     Attachments are immutable, so a new cut needs a new upload and a new URL.
+     The URL only exists once the comment it was dragged into is SUBMITTED; an
+     abandoned draft uploads the file but does not keep it. Verify before
+     committing — live answers 302 or 403, dead answers 404. See docs/PROMO.md. -->
+
+https://github.com/user-attachments/assets/f65f9868-c238-43d4-b97b-545606996cd3
 
 <p align="center">
-  <i>65 seconds &mdash; press play, and hit &#128266; to unmute (GitHub starts videos silent).</i>
+  <i>1 minute 5 &mdash; press play, and hit &#128266; to unmute (GitHub starts videos silent).</i>
   &nbsp;·&nbsp;
   <a href="https://github.com/AndrewAvery7/claude-codex-bridge/releases/latest/download/claude-codex-bridge-promo.mp4">Download the MP4</a>
 </p>
