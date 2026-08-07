@@ -14,7 +14,7 @@
   <img src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-blue.svg" alt="Windows, macOS, Linux">
   <img src="https://img.shields.io/badge/python-3.9%2B-blue.svg" alt="Python 3.9+">
   <img src="https://img.shields.io/badge/status-tested%20end--to--end-brightgreen.svg" alt="Tested">
-  <a href="https://github.com/openai/codex-plugin-cc/pull/551"><img src="https://img.shields.io/badge/upstream%20fix-codex--plugin--cc%20%23551-orange.svg" alt="Upstream PR"></a>
+  <a href="https://github.com/openai/codex-plugin-cc/issues/513"><img src="https://img.shields.io/badge/upstream%20bug-codex--plugin--cc%20%23513%20open-orange.svg" alt="Upstream bug codex-plugin-cc#513 still open"></a>
 </p>
 
 <!-- PROMO-VIDEO. A bare user-attachments URL on its own line: GitHub turns that
@@ -179,6 +179,7 @@ PowerShell 5.1 · Python 3 · [codex-plugin-cc](https://github.com/openai/codex-
 
 ## Acknowledgements
 - **[openai/codex-plugin-cc](https://github.com/openai/codex-plugin-cc)** (Apache-2.0) — the official Claude Code plugin whose session importer powers the transfer step. This kit wraps it and works around [#513](https://github.com/openai/codex-plugin-cc/issues/513) rather than replacing it. Install it from OpenAI's marketplace; none of its code is bundled here.
+- **[@ayobamiseun](https://github.com/ayobamiseun)** — [#469](https://github.com/openai/codex-plugin-cc/pull/469) is the upstream patch worth watching for this lookup bug, covering both the path-prefix mismatch and the content-hash race. Open but unreviewed as of 2026-08-07; until it lands, this kit sidesteps both failure modes by verifying against Codex's own state instead.
 - The **[Agent Skills](https://agentskills.io)** open standard, which makes one `SKILL.md` work across Claude Code, Codex, and 30+ agents.
 
 ## License

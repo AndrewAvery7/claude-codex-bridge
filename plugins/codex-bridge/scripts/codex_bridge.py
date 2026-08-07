@@ -15,8 +15,8 @@ Why it verifies instead of trusting: on Windows the official plugin reports
 "did not record an imported thread" for imports that actually succeeded, because
 Codex writes ledger paths with the \\?\ extended-length prefix while Node's
 realpathSync returns the plain form, so its strict path comparison never matches
-(openai/codex-plugin-cc#513; fix submitted as #551). This engine looks the thread
-up in Codex's own state DB, so it is correct either way.
+(openai/codex-plugin-cc#513, still unfixed upstream). This engine looks the
+thread up in Codex's own state DB, so it is correct either way.
 
 All state access is READ-ONLY. Nothing here writes to Codex's database.
 """
