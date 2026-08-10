@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+### Changed
+- Plugin identifier renamed `codex-bridge` → `claude-codex-bridge` (in
+  `plugins/codex-bridge/.claude-plugin/plugin.json` and the repo's own
+  `.claude-plugin/marketplace.json`). The name `codex-bridge` was already taken
+  in the `anthropics/claude-plugins-community` catalog by an unrelated plugin
+  (`IgorGanapolsky/ThumbGate`), which would have collided on community-catalog
+  submission. The plugin directory path is unchanged; only the install command
+  changes, to `claude plugin install claude-codex-bridge@claude-codex-bridge`.
+
 ### Added
 - Weekly scheduled CI run (Mondays) on top of push/PR triggers - re-validates
   the suite against fresh runner images and toolchains even when the repo is

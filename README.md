@@ -117,7 +117,7 @@ claude plugin install codex@openai-codex
 claude plugin marketplace add AndrewAvery7/claude-codex-bridge
 ```
 ```bash
-claude plugin install codex-bridge@claude-codex-bridge
+claude plugin install claude-codex-bridge@claude-codex-bridge
 ```
 That's it. In any Claude Code session: **`/to-codex`** — scripts and skill ship
 with the plugin and update automatically.
