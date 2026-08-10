@@ -12,6 +12,11 @@ machine on 2026-07-24, against these versions:
 | Claude Code | desktop app, July 2026 |
 | Windows | 11 Pro 26200, PowerShell 5.1 |
 
+> **Re-verification due (2026-08-10):** npm now lists `@openai/codex` 0.147.0
+> as latest — two releases ahead of the 0.145.0 verified above. The table
+> has not been re-run against a newer Codex install; treat it as valid for
+> 0.145.0 only.
+
 Identifiers below are synthesized (`0199aaaa-...`) — the shapes and outcomes
 are as observed.
 

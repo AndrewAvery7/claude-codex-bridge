@@ -174,7 +174,7 @@ PowerShell 5.1 · Python 3 · [codex-plugin-cc](https://github.com/openai/codex-
   and Linux code paths (protocol handler via `open`/`xdg-open`, terminal launch)
   are implemented and CI-checked but await real-world confirmation - please open
   an issue either way, it is genuinely useful feedback.
-- Relies on **undocumented Codex internals**: the `state_5.sqlite` threads schema, the `external_agent_session_imports.json` ledger, and the deep-link routes. Verified against Codex CLI 0.145 / VS Code extension 26.721 / plugin 1.0.6 — future Codex updates could move these. The terminal resume command printed on every transfer is the always-works fallback.
+- Relies on **undocumented Codex internals**: the `state_5.sqlite` threads schema, the `external_agent_session_imports.json` ledger, and the deep-link routes. Verified against Codex CLI 0.145 / VS Code extension 26.721 / plugin 1.0.6 — future Codex updates could move these. The terminal resume command printed on every transfer is the always-works fallback. **Re-verification due:** npm lists Codex CLI 0.147.0 as latest (checked 2026-08-10), two releases ahead of the 0.145.0 verified here; not yet re-tested against it.
 - The transfer converts between two different agent formats; the conversation arrives as visible, continuable turns, but tool-call internals are thinned by the importer.
 
 ## Acknowledgements
