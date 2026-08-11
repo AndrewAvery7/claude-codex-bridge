@@ -13,8 +13,9 @@ container, invisible to normal shells. Two fixes:
 
 ## "Codex reported that the Claude import completed, but did not record an imported thread"
 That text comes from codex-plugin-cc and is a **false negative on Windows**
-([#513](https://github.com/openai/codex-plugin-cc/issues/513)). Ignore it —
-trust the engine's own `SUCCESS`/`ERROR`, which is based on Codex's state DB.
+([#618](https://github.com/openai/codex-plugin-cc/issues/618); formerly tracked as
+#513, closed 2026-08-11 as a duplicate). Ignore it — trust the engine's own
+`SUCCESS`/`ERROR`, which is based on Codex's state DB.
 
 ## "no new Codex thread appeared after import ... and no prior import of this transcript exists"
 Genuine failure. Check in order:

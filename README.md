@@ -14,7 +14,7 @@
   <img src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-blue.svg" alt="Windows, macOS, Linux">
   <img src="https://img.shields.io/badge/python-3.9%2B-blue.svg" alt="Python 3.9+">
   <img src="https://img.shields.io/badge/status-tested%20end--to--end-brightgreen.svg" alt="Tested">
-  <a href="https://github.com/openai/codex-plugin-cc/issues/513"><img src="https://img.shields.io/badge/upstream%20bug-codex--plugin--cc%20%23513%20open-orange.svg" alt="Upstream bug codex-plugin-cc#513 still open"></a>
+  <a href="https://github.com/openai/codex-plugin-cc/issues/618"><img src="https://img.shields.io/badge/upstream%20bug-codex--plugin--cc%20%23618%20open-orange.svg" alt="Upstream bug codex-plugin-cc#618 still open"></a>
 </p>
 
 <!-- PROMO-VIDEO. A bare user-attachments URL on its own line: GitHub turns that
@@ -51,7 +51,7 @@ OpenAI's [codex-plugin-cc](https://github.com/openai/codex-plugin-cc) provides `
 
 | Problem | Official plugin | This kit |
 |---|---|---|
-| Windows transfer reports **false failure** ([#513](https://github.com/openai/codex-plugin-cc/issues/513) — thread is actually created) | Open bug | Detects the imported thread directly in Codex's state DB; trusts evidence, not the broken success message |
+| Windows transfer reports **false failure** ([#618](https://github.com/openai/codex-plugin-cc/issues/618) — thread is actually created) | Open bug | Detects the imported thread directly in Codex's state DB; trusts evidence, not the broken success message |
 | Re-transferring an **unchanged session** creates no thread (content-hash dedupe) and looks like a failure | Unhandled | Reads Codex's import ledger and reuses the existing thread, telling you so |
 | `codex` **not on PATH** for spawned shells (npm installs inside an app container are invisible outside it) | Unhandled | Resolves an absolute path to the standalone vendored `codex.exe` that is real for every process |
 | Where does the session **open**? | Prints a command | Deep-links straight into the **Codex desktop app** (`codex://threads/<id>`) or the **VS Code Codex panel** (`vscode://openai.chatgpt/local/<id>`), falling back to a terminal TUI — your choice |
@@ -178,7 +178,7 @@ PowerShell 5.1 · Python 3 · [codex-plugin-cc](https://github.com/openai/codex-
 - The transfer converts between two different agent formats; the conversation arrives as visible, continuable turns, but tool-call internals are thinned by the importer.
 
 ## Acknowledgements
-- **[openai/codex-plugin-cc](https://github.com/openai/codex-plugin-cc)** (Apache-2.0) — the official Claude Code plugin whose session importer powers the transfer step. This kit wraps it and works around [#513](https://github.com/openai/codex-plugin-cc/issues/513) rather than replacing it. Install it from OpenAI's marketplace; none of its code is bundled here.
+- **[openai/codex-plugin-cc](https://github.com/openai/codex-plugin-cc)** (Apache-2.0) — the official Claude Code plugin whose session importer powers the transfer step. This kit wraps it and works around [#618](https://github.com/openai/codex-plugin-cc/issues/618) (previously tracked as [#513](https://github.com/openai/codex-plugin-cc/issues/513), closed 2026-08-11 as a duplicate of #618) rather than replacing it. Install it from OpenAI's marketplace; none of its code is bundled here.
 - **[@ayobamiseun](https://github.com/ayobamiseun)** — [#469](https://github.com/openai/codex-plugin-cc/pull/469) is the upstream patch worth watching for this lookup bug, covering both the path-prefix mismatch and the content-hash race. Open but unreviewed as of 2026-08-07; until it lands, this kit sidesteps both failure modes by verifying against Codex's own state instead.
 - The **[Agent Skills](https://agentskills.io)** open standard, which makes one `SKILL.md` work across Claude Code, Codex, and 30+ agents.
 

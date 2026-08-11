@@ -2,6 +2,18 @@
 
 ## Unreleased
 
+### Fixed
+- Re-pointed the upstream-bug references (README badge/table/acknowledgements,
+  docs/TROUBLESHOOTING.md, docs/DESIGN.md) from
+  [openai/codex-plugin-cc#513](https://github.com/openai/codex-plugin-cc/issues/513)
+  to [#618](https://github.com/openai/codex-plugin-cc/issues/618): upstream
+  closed #513 on 2026-08-11 as a duplicate of #618, which is the current open
+  issue describing the same Windows false-negative failure. The upstream bug
+  itself is still unfixed — `codex.mjs` is unchanged (sha
+  `fead00cc44c8b945a292481c490ba0a50b0c5c64`), tracking issue #417 is still
+  open, and fix PR #469 is still open/unreviewed — so this kit's own
+  detection logic is unchanged and still required.
+
 ### Changed
 - Plugin identifier renamed `codex-bridge` → `claude-codex-bridge` (in
   `plugins/codex-bridge/.claude-plugin/plugin.json` and the repo's own

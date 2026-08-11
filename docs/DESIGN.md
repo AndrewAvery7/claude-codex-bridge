@@ -26,8 +26,9 @@ practice, and because (2) and (3) are out of its scope entirely.
 > Codex reported that the Claude import completed, but did not record an
 > imported thread.
 
-This is [issue #513](https://github.com/openai/codex-plugin-cc/issues/513) — a
+This is [issue #618](https://github.com/openai/codex-plugin-cc/issues/618) — a
 **false negative**. The import succeeds; the plugin's success check fails.
+(Originally tracked as #513, closed 2026-08-11 as a duplicate of #618.)
 Codex's import ledger (`~/.codex/external_agent_session_imports.json`) records
 source paths with Windows extended-length prefixes (`\\?\C:\...`), and the
 plugin's path comparison doesn't normalize them.
