@@ -3,6 +3,13 @@
 ## Unreleased
 
 ### Fixed
+- Corrected this changelog's and the README's description of
+  [openai/codex-plugin-cc#551](https://github.com/openai/codex-plugin-cc/pull/551).
+  Both called it a separate or "rival" attempt at the upstream fix that was
+  closed unmerged, which read as a third party's patch that upstream turned
+  down. It is neither: #551 was this project's own PR, it closed because the
+  fork behind it was deleted, and it only ever normalised the path — the
+  content-hash race it left in place is why #469 is the patch worth watching.
 - Re-pointed the upstream-bug references (README badge/table/acknowledgements,
   docs/TROUBLESHOOTING.md, docs/DESIGN.md) from
   [openai/codex-plugin-cc#513](https://github.com/openai/codex-plugin-cc/issues/513)
@@ -19,10 +26,11 @@
   2026-08-22: the Codex CLI re-verification caveat now reads 0.149.0 (four
   releases past the 0.145.0 this kit was verified against, up from two), and the
   [#469](https://github.com/openai/codex-plugin-cc/pull/469) acknowledgement now
-  records that it is still unreviewed, that an independent Windows reproduction
-  landed on it 2026-08-12, and that a rival fix attempt
-  ([#551](https://github.com/openai/codex-plugin-cc/pull/551)) was closed unmerged
-  on 2026-07-26. Upstream `main` is still at `db52e28` (2026-07-07) and
+  records that it is still unreviewed and that a third contributor weighed in on
+  2026-08-12, and describes this project's own earlier PR
+  ([#551](https://github.com/openai/codex-plugin-cc/pull/551)) accurately: it is
+  closed and unmerged because it covered only the path half of the bug, not
+  because upstream rejected a fix. Upstream `main` is still at `db52e28` (2026-07-07) and
   `codex.mjs` still hashes to `fead00cc44c8b945a292481c490ba0a50b0c5c64`, so the
   bug and this kit's workaround are both unchanged.
 - Static compatibility check of Codex CLI 0.149.0, recorded in
