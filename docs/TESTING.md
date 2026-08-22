@@ -18,6 +18,36 @@ machine on 2026-07-24, against these versions:
 > install; treat the results below as observed on 0.145.0 only. The outstanding
 > live run is tracked in
 > [#8](https://github.com/AndrewAvery7/claude-codex-bridge/issues/8).
+
+## Partial re-run, 2026-08-22 (Codex CLI still 0.145.0)
+
+Run with `tools/verify-codex-release.ps1 -RunTransfers` on Windows. The CLI had
+not moved, so this does **not** retire the note above — what it establishes is
+that the flow still works on 0.145.0 against a much newer desktop app.
+
+| Component | Version at this run |
+|---|---|
+| Codex CLI | 0.145.0 (resolved to the vendored exe in the Claude app container) |
+| codex-plugin-cc | 1.0.6 |
+| Codex desktop app | 26.818.5229.0 (recorded above as 26.721.x) |
+| `threads` table | 38 columns, all four the engine reads present, 405 rows |
+| `codex://` handler | registered |
+
+| # | Result |
+|---|---|
+| T0 engine resolves a thread | PASS |
+| T1 fresh import | NOT EXERCISED - every recent settled transcript was already in the ledger |
+| T3 dedupe | PASS - reused the prior thread |
+| T4 model and effort flags | PASS |
+| T5 absolute binary path | PASS |
+| T6 thread working directory | PASS |
+| O1 / O2 deep links | not run - they need a human looking at a screen |
+
+Three engine bugs were found by running this rather than reasoning about it: a
+Windows Store app-execution alias returned as an executable path, a successful
+import reported as a failure once it outran a fixed 15-second window, and a
+failed transfer whose only diagnostic was filtered away as known noise. All are
+fixed in the changelog's Unreleased section.
 >
 > A **static** compatibility check of the shipped 0.149.0 Windows binary
 > (`@openai/codex@0.149.0-win32-x64`,
