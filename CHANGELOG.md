@@ -2,6 +2,18 @@
 
 ## Unreleased
 
+### Added
+- `tools/verify-codex-release.ps1` - re-runs the docs/TESTING.md verification
+  against whatever Codex is installed and writes a report to paste into the
+  tracking issue. The version table goes stale every few Codex releases and
+  re-establishing it by hand is enough work that it does not happen; this
+  collects the same evidence in one run. Read-only by default (versions, the
+  binary the engine resolves, the `threads` schema, the ledger, the `codex://`
+  handler registration); `-RunTransfers` adds the live T1/T3/T4 scenarios, which
+  create threads and so are opt-in. CI now lints `tools/*.ps1` alongside the
+  plugin scripts: PSScriptAnalyzer, a Windows PowerShell 5.1 parse check, and
+  the ASCII guard.
+
 ### Fixed
 - Six engine bugs, each with a regression test that fails without its fix:
   - `pick` accepted `0` and negative answers and passed them straight to a list

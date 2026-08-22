@@ -79,14 +79,18 @@ jobs:
         shell: pwsh
         run: |
           Install-Module PSScriptAnalyzer -Force -Scope CurrentUser
-          $results = Invoke-ScriptAnalyzer -Path plugins/codex-bridge/scripts -Recurse -Severity Error
+          # -Path takes a single string, so analyse each root in turn.
+          $results = @()
+          foreach ($root in @('plugins/codex-bridge/scripts', 'tools')) {
+            $results += Invoke-ScriptAnalyzer -Path $root -Recurse -Severity Error
+          }
           $results | Format-Table -AutoSize
           if ($results.Count -gt 0) { exit 1 }
       - name: PowerShell 5.1 parse check
         shell: powershell
         run: |
           $errs = @()
-          Get-ChildItem plugins/codex-bridge/scripts/*.ps1 | ForEach-Object {
+          Get-ChildItem plugins/codex-bridge/scripts/*.ps1, tools/*.ps1 | ForEach-Object {
             $t = $null; $e = $null
             [void][System.Management.Automation.Language.Parser]::ParseFile($_.FullName, [ref]$t, [ref]$e)
             if ($e.Count -gt 0) { $errs += "$($_.Name): $($e[0].Message)" }
@@ -96,7 +100,7 @@ jobs:
       - name: ASCII guard (PS 5.1 reads BOM-less UTF-8 as ANSI)
         shell: pwsh
         run: |
-          $bad = Get-ChildItem plugins/codex-bridge/scripts/*.ps1 | Where-Object {
+          $bad = Get-ChildItem plugins/codex-bridge/scripts/*.ps1, tools/*.ps1 | Where-Object {
             @([System.IO.File]::ReadAllBytes($_.FullName) | Where-Object { $_ -gt 127 }).Count -gt 0
           }
           if ($bad) { $bad | ForEach-Object { Write-Error "Non-ASCII bytes in $($_.Name)" }; exit 1 }
