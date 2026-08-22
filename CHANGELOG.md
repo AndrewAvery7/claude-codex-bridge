@@ -3,6 +3,11 @@
 ## Unreleased
 
 ### Added
+- `tools/verify-codex-release.ps1` now fails with a usable message when it is
+  run from outside a clone of this repository. It drives the engine by relative
+  path, so without the check a missing engine surfaced much further down as
+  "Codex CLI NOT FOUND" - blaming Codex for what is actually a checkout
+  problem. The report header also records which repo root it resolved.
 - `tools/verify-codex-release.ps1` - re-runs the docs/TESTING.md verification
   against whatever Codex is installed and writes a report to paste into the
   tracking issue. The version table goes stale every few Codex releases and
