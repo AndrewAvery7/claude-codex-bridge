@@ -56,9 +56,23 @@ if (-not $python) {
     exit 1
 }
 
+# This script drives the engine, so it only works from inside a clone. Say so
+# plainly: without this check a missing engine surfaces further down as
+# "Codex CLI NOT FOUND", which blames Codex for a checkout problem.
+if (-not (Test-Path $engine)) {
+    Write-Error ("Could not find the engine at {0}." -f $engine)
+    Write-Host  ''
+    Write-Host  'Run this from inside a clone of the repository:'
+    Write-Host  '    git clone https://github.com/AndrewAvery7/claude-codex-bridge'
+    Write-Host  '    cd claude-codex-bridge'
+    Write-Host  '    .\tools\verify-codex-release.ps1'
+    exit 1
+}
+
 Add-Line ('## Verification run - {0}' -f (Get-Date -Format 'yyyy-MM-dd'))
 Add-Line ''
 Add-Line ('Machine: {0}, PowerShell {1}' -f [System.Environment]::OSVersion.VersionString, $PSVersionTable.PSVersion)
+Add-Line ('Repo: {0}' -f $repoRoot)
 Add-Line ''
 Add-Line '### Versions'
 Add-Line ''
