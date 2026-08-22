@@ -3,6 +3,18 @@
 ## Unreleased
 
 ### Fixed
+- `tools/verify-codex-release.ps1` labelled a scenario "T1 fresh import" while
+  only checking that the engine printed a thread id - which it does for a
+  deduped reuse just as much as for a first import. On a real machine T1
+  reported PASS while reusing an existing thread, so the row claimed something
+  it had never tested. This is the same error as the T3 one fixed just before
+  it, in a second place. The picker now prefers a settled transcript that is
+  **not** already in Codex's import ledger, so a first import is actually
+  possible; T1 asserts that no reuse message appeared; and when every settled
+  transcript has been imported before, T1 reports NOT EXERCISED instead of
+  passing. Resolution is reported separately as T0, since "the engine found a
+  thread" is a real result worth keeping - it is just not the same claim.
+
 - `tools/verify-codex-release.ps1` claimed to test dedupe without checking its
   own precondition. It picked the *newest* transcript - usually the live session
   you are sitting in - printed the heading "re-transfer of the unchanged
