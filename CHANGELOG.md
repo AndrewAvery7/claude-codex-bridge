@@ -3,6 +3,20 @@
 ## Unreleased
 
 ### Fixed
+- `tools/verify-codex-release.ps1` claimed to test dedupe without checking its
+  own precondition. It picked the *newest* transcript - usually the live session
+  you are sitting in - printed the heading "re-transfer of the unchanged
+  transcript", and re-ran it. Codex keys dedupe on the content hash, so a
+  transcript that is still being appended can never dedupe: on a real machine
+  the three runs produced three different `content_sha256` values and three
+  separate threads, and the report presented that as a normal result. It now
+  prefers a transcript idle for five minutes, hashes the source before and
+  after T1, and reports T3 as NOT EXERCISED (with both hashes) when the file
+  moved. T1, T3 and T4 are also asserted rather than printed for the reader to
+  eyeball - the report now carries PASS/FAIL per scenario.
+- `docs/TESTING.md` records the same precondition on the T3 row, so the next
+  person re-running it does not repeat the mistake.
+
 - `codex_command()` returned Windows paths that cannot actually be executed.
   It guarded against one trap (an `npm -g` install virtualised inside a
   packaged app) but not the other: `%LOCALAPPDATA%\Microsoft\WindowsApps\

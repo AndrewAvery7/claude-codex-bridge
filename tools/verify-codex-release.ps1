@@ -42,6 +42,17 @@ function Add-Row {
     Add-Line ("| {0} | {1} |" -f $Name, $Value)
 }
 
+function Add-Row2 {
+    param([string]$Name, [string]$Expected, [string]$Result)
+    Add-Line ("| {0} | {1} | {2} |" -f $Name, $Expected, $Result)
+}
+
+function Test-Expect {
+    param([bool]$Ok)
+    if ($Ok) { return 'PASS' }
+    return 'FAIL'
+}
+
 function Get-Python {
     foreach ($candidate in @('python', 'python3', 'py')) {
         $found = Get-Command $candidate -ErrorAction SilentlyContinue
@@ -172,14 +183,25 @@ if ($RunTransfers) {
     Add-Line ''
 
     if (-not $Source) {
-        $newest = Get-ChildItem (Join-Path $env:USERPROFILE '.claude\projects\*\*.jsonl') -ErrorAction SilentlyContinue |
-            Sort-Object LastWriteTime -Descending | Select-Object -First 1
-        if ($newest) { $Source = $newest.FullName }
+        # Deliberately NOT the newest transcript. The newest one is usually the
+        # session you are sitting in, and Claude Code keeps appending to it - so
+        # its content hash moves between runs and T3 can never test dedupe.
+        $all = Get-ChildItem (Join-Path $env:USERPROFILE '.claude\projects\*\*.jsonl') -ErrorAction SilentlyContinue |
+            Sort-Object LastWriteTime -Descending
+        $settled = $all | Where-Object { $_.LastWriteTime -lt (Get-Date).AddMinutes(-5) } | Select-Object -First 1
+        if ($settled) {
+            $Source = $settled.FullName
+        } elseif ($all) {
+            $Source = $all[0].FullName
+            Add-Line '_No transcript has been idle for 5 minutes; using the newest one. If it is still being written, T3 cannot test dedupe._'
+            Add-Line ''
+        }
     }
     if (-not $Source) {
         Add-Line 'No transcript found under ~/.claude/projects - cannot run T1/T3/T4.'
     } else {
         Add-Line ('Source: `{0}`' -f (Split-Path -Leaf $Source))
+        $hashBefore = (Get-FileHash $Source -Algorithm SHA256).Hash
         Add-Line ''
         Add-Line '```'
 
@@ -188,12 +210,22 @@ if ($RunTransfers) {
         $t1 = & $python $engine transfer --source $Source --open none 2>&1
         $t1 | ForEach-Object { Add-Line $_ }
 
-        # T3: same source again - Codex dedupes by content hash, so the engine
-        # should fall through to the ledger and reuse the existing thread.
+        # T3: the dedupe case. Codex keys dedupe on the content hash, so this
+        # only tests anything if the transcript really did not move. Check that
+        # rather than asserting it in a heading.
+        $hashAfter = (Get-FileHash $Source -Algorithm SHA256).Hash
         Add-Line ''
-        Add-Line '--- T3 re-transfer of the unchanged transcript ---'
-        $t3 = & $python $engine transfer --source $Source --open none 2>&1
-        $t3 | ForEach-Object { Add-Line $_ }
+        if ($hashBefore -eq $hashAfter) {
+            Add-Line '--- T3 re-transfer, source verified unchanged ---'
+            $t3 = & $python $engine transfer --source $Source --open none 2>&1
+            $t3 | ForEach-Object { Add-Line $_ }
+        } else {
+            $t3 = $null
+            Add-Line '--- T3 SKIPPED: the transcript changed while T1 ran ---'
+            Add-Line ("    before: {0}" -f $hashBefore)
+            Add-Line ("    after:  {0}" -f $hashAfter)
+            Add-Line '    Codex dedupes on content, so a moving transcript cannot exercise it.'
+        }
 
         # T4: the resume command must carry the model and effort flags through.
         Add-Line ''
@@ -201,6 +233,22 @@ if ($RunTransfers) {
         $t4 = & $python $engine transfer --source $Source --open none --model gpt-5.6-luna --effort high 2>&1
         $t4 | ForEach-Object { Add-Line $_ }
         Add-Line '```'
+
+        # Check the recorded expectations instead of leaving them to the eye.
+        Add-Line ''
+        Add-Line '| Scenario | Expected | Result |'
+        Add-Line '|---|---|---|'
+        $t1Text = ($t1 | Out-String)
+        Add-Row2 'T1 fresh import' 'SUCCESS with a thread id' (Test-Expect ($t1Text -match 'SUCCESS\s+thread:'))
+        if ($null -eq $t3) {
+            Add-Row2 'T3 dedupe' 'reuses the existing thread' 'NOT EXERCISED - source changed'
+        } else {
+            $t3Text = ($t3 | Out-String)
+            Add-Row2 'T3 dedupe' 'reuses the existing thread' (Test-Expect ($t3Text -match 'reusing its thread'))
+        }
+        $t4Text = ($t4 | Out-String)
+        $t4ok = ($t4Text -match '-m gpt-5\.6-luna') -and ($t4Text -match 'model_reasoning_effort')
+        Add-Row2 'T4 model and effort flags' 'both rendered into the resume command' (Test-Expect $t4ok)
 
         # T6: the thread's original working directory, prefix stripped.
         $threadId = $t1 | Select-String -Pattern 'SUCCESS\s+thread:\s+(\S+)' | ForEach-Object { $_.Matches[0].Groups[1].Value }

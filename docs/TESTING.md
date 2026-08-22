@@ -46,7 +46,7 @@ are as observed.
 |---|---|---|---|
 | T1 | Fresh session import | Run engine against a never-imported `.jsonl`; compare `threads` table before/after | New thread detected with correct title; `SUCCESS` with `codex resume` command |
 | T2 | Plugin false-failure workaround (#513) | Same run: plugin printed "did not record an imported thread" | Engine ignored the message; thread existed in `state_5.sqlite`; verified id matched the ledger record |
-| T3 | Unchanged-content re-transfer (dedupe) | Re-run T1's source unmodified | No new thread (expected); engine fell through to ledger lookup and reused the prior thread id, labeled "(transcript unchanged... reusing)" |
+| T3 | Unchanged-content re-transfer (dedupe) | Re-run T1's source unmodified - it must be a *settled* transcript; Codex keys dedupe on the content hash, and a live session keeps appending, so re-running against the session you are sitting in tests nothing | No new thread (expected); engine fell through to ledger lookup and reused the prior thread id, labeled "(transcript unchanged... reusing)" |
 | T4 | Model + effort flags | `-Model gpt-5.6-luna -Effort high` | Resume command rendered `-m gpt-5.6-luna -c model_reasoning_effort="high"` |
 | T5 | Absolute binary path | Inspect emitted command | Full path to vendored `codex.exe`; the exe itself executed standalone (`codex-cli 0.145.0`) |
 | T6 | Thread working directory | `codex-thread-query.py --cwd <id>` | Returned the session's original cwd with `\\?\` prefix stripped |
