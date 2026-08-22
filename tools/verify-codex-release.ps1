@@ -47,10 +47,20 @@ function Add-Row2 {
     Add-Line ("| {0} | {1} | {2} |" -f $Name, $Expected, $Result)
 }
 
+$script:failCount = 0
+$script:notExercised = 0
+
 function Test-Expect {
     param([bool]$Ok)
     if ($Ok) { return 'PASS' }
+    $script:failCount = $script:failCount + 1
     return 'FAIL'
+}
+
+function Skip-Scenario {
+    param([string]$Why)
+    $script:notExercised = $script:notExercised + 1
+    return ('NOT EXERCISED - ' + $Why)
 }
 
 function Get-Python {
@@ -270,10 +280,10 @@ if ($RunTransfers) {
         if ($expectFresh) {
             Add-Row2 'T1 fresh import' 'a new thread, not a ledger reuse' (Test-Expect ($t1Resolved -and (-not $t1Reused)))
         } else {
-            Add-Row2 'T1 fresh import' 'a new thread, not a ledger reuse' 'NOT EXERCISED - source already in the ledger'
+            Add-Row2 'T1 fresh import' 'a new thread, not a ledger reuse' (Skip-Scenario 'source already in the ledger')
         }
         if ($null -eq $t3) {
-            Add-Row2 'T3 dedupe' 'reuses the existing thread' 'NOT EXERCISED - source changed'
+            Add-Row2 'T3 dedupe' 'reuses the existing thread' (Skip-Scenario 'source changed during T1')
         } else {
             $t3Text = ($t3 | Out-String)
             Add-Row2 'T3 dedupe' 'reuses the existing thread' (Test-Expect ($t3Text -match 'reusing its thread'))
@@ -302,3 +312,12 @@ $out = Join-Path $repoRoot 'verification-report.md'
 Set-Content -Path $out -Value ($report -join "`r`n") -Encoding ASCII
 Write-Host ''
 Write-Host ('Report written to {0} - paste it into the tracking issue.' -f $out)
+if ($script:notExercised -gt 0) {
+    Write-Host ('{0} scenario(s) could not be exercised - see the table.' -f $script:notExercised)
+}
+if ($script:failCount -gt 0) {
+    # Exit non-zero so a failed verification cannot be mistaken for a clean run,
+    # by a person skimming or by anything that checks the exit code.
+    Write-Host ('{0} scenario(s) FAILED.' -f $script:failCount)
+    exit 1
+}

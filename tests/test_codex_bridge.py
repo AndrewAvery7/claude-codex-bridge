@@ -178,6 +178,87 @@ def test_agents_md_cap_matches_codex_default():
 
 
 # ---------------------------------------------------------------------------
+# import detection - a slow import is not a failed one
+# ---------------------------------------------------------------------------
+
+class _Clock:
+    """Fake monotonic clock; every sleep advances it, so tests never wait."""
+
+    def __init__(self):
+        self.t = 0.0
+
+    def sleep(self, seconds):
+        self.t += seconds
+
+    def monotonic(self):
+        return self.t
+
+
+def test_wait_returns_a_thread_that_lands_late(monkeypatch):
+    cb = importlib.reload(codex_bridge)
+    clock = _Clock()
+    # The thread row appears 30s in - well past the old fixed 15-tick window.
+    monkeypatch.setattr(cb, "thread_created_after",
+                        lambda before: ("t-late", "Landed late") if clock.t >= 30 else None)
+    monkeypatch.setattr(cb, "ledger_thread_for", lambda source: None)
+    got = cb.wait_for_import(0, None, Path("/x.jsonl"), 60,
+                             sleep=clock.sleep, monotonic=clock.monotonic)
+    assert got == ("t-late", "Landed late")
+
+
+def test_wait_gives_up_after_the_window(monkeypatch):
+    cb = importlib.reload(codex_bridge)
+    clock = _Clock()
+    monkeypatch.setattr(cb, "thread_created_after", lambda before: None)
+    monkeypatch.setattr(cb, "ledger_thread_for", lambda source: None)
+    assert cb.wait_for_import(0, None, Path("/x.jsonl"), 5,
+                              sleep=clock.sleep, monotonic=clock.monotonic) is None
+    assert clock.t >= 5
+
+
+def test_wait_accepts_a_new_ledger_record_as_the_import(monkeypatch):
+    cb = importlib.reload(codex_bridge)
+    clock = _Clock()
+    # No thread row ever appears, but the ledger gains a record that was not
+    # there when we started - that is this import, landing late.
+    monkeypatch.setattr(cb, "thread_created_after", lambda before: None)
+    monkeypatch.setattr(cb, "ledger_thread_for",
+                        lambda source: "t-new" if clock.t >= 10 else "t-old")
+    got = cb.wait_for_import(0, "t-old", Path("/x.jsonl"), 60,
+                             sleep=clock.sleep, monotonic=clock.monotonic)
+    assert got == ("t-new", "")
+
+
+def test_wait_does_not_mistake_a_prior_ledger_record_for_this_import(monkeypatch):
+    cb = importlib.reload(codex_bridge)
+    clock = _Clock()
+    # The only ledger record is the one from a previous transfer. That is the
+    # dedupe case, and it is the caller's to report - not a fresh import.
+    monkeypatch.setattr(cb, "thread_created_after", lambda before: None)
+    monkeypatch.setattr(cb, "ledger_thread_for", lambda source: "t-old")
+    assert cb.wait_for_import(0, "t-old", Path("/x.jsonl"), 5,
+                              sleep=clock.sleep, monotonic=clock.monotonic) is None
+
+
+def _parse(argv):
+    """Run the engine's own parser and capture the parsed args, running nothing."""
+    cb = importlib.reload(codex_bridge)
+    holder = {}
+    real = cb.cmd_transfer
+    cb.cmd_transfer = lambda args: holder.setdefault("args", args) and 0
+    try:
+        cb.main(argv)
+    finally:
+        cb.cmd_transfer = real
+    return holder["args"]
+
+
+def test_wait_window_is_adjustable_and_defaults_to_sixty():
+    assert _parse(["transfer", "--source", "x.jsonl"]).wait == 60
+    assert _parse(["transfer", "--source", "x.jsonl", "--wait", "5"]).wait == 5
+
+
+# ---------------------------------------------------------------------------
 # Windows binary resolution - a path can be on PATH and still refuse to run
 # ---------------------------------------------------------------------------
 
