@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### Added
+- `docs/TESTING.md` records the partial live re-run of 2026-08-22: the flow
+  still works on Codex CLI 0.145.0 against desktop app 26.818.5229.0, well
+  ahead of the 26.721.x in the original record. The re-verification note stays,
+  because the CLI has not moved and 0.149.0 remains untested.
+
 ### Fixed
 - A failed transfer could report no evidence at all. The error path filters
   three known-noise strings out of the importer's output - including the
