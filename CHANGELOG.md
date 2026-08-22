@@ -15,6 +15,16 @@
   detection logic is unchanged and still required.
 
 ### Changed
+- Refreshed the dated upstream/toolchain claims after re-checking them on
+  2026-08-22: the Codex CLI re-verification caveat now reads 0.149.0 (four
+  releases past the 0.145.0 this kit was verified against, up from two), and the
+  [#469](https://github.com/openai/codex-plugin-cc/pull/469) acknowledgement now
+  records that it is still unreviewed, that an independent Windows reproduction
+  landed on it 2026-08-12, and that a rival fix attempt
+  ([#551](https://github.com/openai/codex-plugin-cc/pull/551)) was closed unmerged
+  on 2026-07-26. Upstream `main` is still at `db52e28` (2026-07-07) and
+  `codex.mjs` still hashes to `fead00cc44c8b945a292481c490ba0a50b0c5c64`, so the
+  bug and this kit's workaround are both unchanged.
 - Plugin identifier renamed `codex-bridge` → `claude-codex-bridge` (in
   `plugins/codex-bridge/.claude-plugin/plugin.json` and the repo's own
   `.claude-plugin/marketplace.json`). The name `codex-bridge` was already taken
