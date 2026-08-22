@@ -85,9 +85,10 @@ def codex_command() -> str | None:
     exe: the desktop app's own bin directory, then the vendored exe inside the
     packaged app's LocalCache backing store, which is real for every process.
     """
-    found = shutil.which("codex")
-    if found and not (IS_WIN and _is_unusable_windows_path(found)):
-        return found
+    candidates = which_all("codex")
+    for candidate in candidates:
+        if not (IS_WIN and _is_unusable_windows_path(candidate)):
+            return candidate
 
     if IS_WIN:
         local = Path(os.environ.get("LOCALAPPDATA", HOME / "AppData/Local"))
@@ -111,7 +112,49 @@ def codex_command() -> str | None:
     ):
         if candidate.exists():
             return str(candidate)
-    return found  # may be None
+    # Nothing usable anywhere. Hand back the first PATH hit if there was one, so
+    # the caller can at least name what it found; None if PATH held nothing.
+    return candidates[0] if candidates else None
+
+
+def which_all(name: str) -> list[str]:
+    """Every `name` on PATH, not just the first.
+
+    shutil.which stops at the first hit, which is wrong here: on Windows the
+    first hit is often a path that resolves and then refuses to execute. Giving
+    up on it means never seeing the working install further down PATH.
+    """
+    exts = [""]
+    if IS_WIN:
+        exts = [e for e in os.environ.get("PATHEXT", ".EXE;.CMD;.BAT").split(os.pathsep) if e]
+        exts = ["", *exts, *[e.lower() for e in exts]]
+    seen: set[str] = set()
+    out: list[str] = []
+    for directory in os.environ.get("PATH", "").split(os.pathsep):
+        if not directory:
+            continue
+        for ext in exts:
+            candidate = Path(directory) / (name + ext)
+            key = str(candidate).lower()
+            if key in seen:
+                continue
+            seen.add(key)
+            if candidate.is_file():
+                out.append(str(candidate))
+    return out
+
+
+def _in_packaged_container() -> bool:
+    r"""True when we are running inside a packaged (MSIX) app's virtual filesystem.
+
+    Inside such a container %APPDATA% points at the app's private Roaming store
+    under ...\Packages\<id>\LocalCache\Roaming. That is the only situation in
+    which an `npm -g` install there is invisible to other processes - outside
+    one, %APPDATA%\npm is an ordinary, perfectly executable directory, and
+    rejecting it would discard the user's real install.
+    """
+    appdata = os.environ.get("APPDATA", "").lower().replace("/", "\\")
+    return "\\packages\\" in appdata
 
 
 def _is_unusable_windows_path(p: str) -> bool:
@@ -135,7 +178,7 @@ def _is_unusable_windows_path(p: str) -> bool:
     # stops matching the moment the two sides disagree.
     low = p.lower().replace("/", "\\")
     appdata = os.environ.get("APPDATA", "")
-    if appdata:
+    if appdata and _in_packaged_container():
         npm_root = (appdata.rstrip("\\/") + "\\npm").lower().replace("/", "\\")
         if low.startswith(npm_root):
             return True

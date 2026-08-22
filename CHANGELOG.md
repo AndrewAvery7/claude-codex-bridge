@@ -2,6 +2,26 @@
 
 ## Unreleased
 
+### Fixed
+- Codex binary resolution gave up after the first candidate on PATH and could
+  reject the user's real install. Both were exposed by one machine where
+  `where.exe codex` resolves to
+  `C:\Program Files\WindowsApps\OpenAI.Codex_...\app\resources\codex.exe` and
+  running it fails with access denied - Windows refusing to execute the binary
+  its own PATH points at.
+  - `shutil.which()` returns only the first hit. When that first hit is a path
+    that resolves and then refuses to run, the engine jumped straight to its
+    hardcoded fallbacks and never looked at the rest of PATH, where a working
+    install may sit. It now walks every PATH entry in order and takes the first
+    usable one.
+  - The `%APPDATA%\npm` guard rejected that directory unconditionally. That is
+    right only inside a packaged (MSIX) app, where `%APPDATA%` points at the
+    app's private store and an `npm -g` install there is invisible to other
+    processes. Run from an ordinary shell it is an ordinary directory, so the
+    guard was discarding a perfectly good install. It now applies only when we
+    are actually running inside such a container, detected by `%APPDATA%`
+    itself sitting under `\Packages\`.
+
 ### Added
 - `docs/TESTING.md` records the partial live re-run of 2026-08-22: the flow
   still works on Codex CLI 0.145.0 against desktop app 26.818.5229.0, well
