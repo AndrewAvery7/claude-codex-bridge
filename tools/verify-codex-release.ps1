@@ -182,25 +182,50 @@ if ($RunTransfers) {
     Add-Line '### Live transfer scenarios'
     Add-Line ''
 
+    # Transcripts Codex has already imported. One of these can only ever produce
+    # a dedupe hit, never the fresh import T1 is supposed to be testing.
+    $imported = @{}
+    if (Test-Path $ledger) {
+        foreach ($rec in @((Get-Content $ledger -Raw | ConvertFrom-Json).records)) {
+            $sp = [string]$rec.source_path
+            if ($sp) {
+                if ($sp.StartsWith('\\?\UNC\')) { $sp = '\\' + $sp.Substring(8) }
+                elseif ($sp.StartsWith('\\?\')) { $sp = $sp.Substring(4) }
+                $imported[$sp.ToLower()] = $true
+            }
+        }
+    }
+
     if (-not $Source) {
         # Deliberately NOT the newest transcript. The newest one is usually the
         # session you are sitting in, and Claude Code keeps appending to it - so
         # its content hash moves between runs and T3 can never test dedupe.
         $all = Get-ChildItem (Join-Path $env:USERPROFILE '.claude\projects\*\*.jsonl') -ErrorAction SilentlyContinue |
             Sort-Object LastWriteTime -Descending
-        $settled = $all | Where-Object { $_.LastWriteTime -lt (Get-Date).AddMinutes(-5) } | Select-Object -First 1
-        if ($settled) {
-            $Source = $settled.FullName
+        $settled = @($all | Where-Object { $_.LastWriteTime -lt (Get-Date).AddMinutes(-5) })
+        # Prefer one Codex has never seen, so T1 is a real first import.
+        $never = $settled | Where-Object { -not $imported.ContainsKey($_.FullName.ToLower()) } | Select-Object -First 1
+        if ($never) {
+            $Source = $never.FullName
+        } elseif ($settled.Count -gt 0) {
+            $Source = $settled[0].FullName
         } elseif ($all) {
             $Source = $all[0].FullName
             Add-Line '_No transcript has been idle for 5 minutes; using the newest one. If it is still being written, T3 cannot test dedupe._'
             Add-Line ''
         }
     }
+    $expectFresh = $false
+    if ($Source) { $expectFresh = -not $imported.ContainsKey($Source.ToLower()) }
     if (-not $Source) {
         Add-Line 'No transcript found under ~/.claude/projects - cannot run T1/T3/T4.'
     } else {
         Add-Line ('Source: `{0}`' -f (Split-Path -Leaf $Source))
+        if ($expectFresh) {
+            Add-Line 'Not present in Codex import ledger, so T1 is a genuine first import.'
+        } else {
+            Add-Line 'Already in Codex import ledger, so T1 can only dedupe - it cannot test a fresh import.'
+        }
         $hashBefore = (Get-FileHash $Source -Algorithm SHA256).Hash
         Add-Line ''
         Add-Line '```'
@@ -239,7 +264,14 @@ if ($RunTransfers) {
         Add-Line '| Scenario | Expected | Result |'
         Add-Line '|---|---|---|'
         $t1Text = ($t1 | Out-String)
-        Add-Row2 'T1 fresh import' 'SUCCESS with a thread id' (Test-Expect ($t1Text -match 'SUCCESS\s+thread:'))
+        $t1Resolved = ($t1Text -match 'SUCCESS\s+thread:')
+        $t1Reused = ($t1Text -match 'reusing its thread')
+        Add-Row2 'T0 engine resolves a thread' 'SUCCESS with a thread id' (Test-Expect $t1Resolved)
+        if ($expectFresh) {
+            Add-Row2 'T1 fresh import' 'a new thread, not a ledger reuse' (Test-Expect ($t1Resolved -and (-not $t1Reused)))
+        } else {
+            Add-Row2 'T1 fresh import' 'a new thread, not a ledger reuse' 'NOT EXERCISED - source already in the ledger'
+        }
         if ($null -eq $t3) {
             Add-Row2 'T3 dedupe' 'reuses the existing thread' 'NOT EXERCISED - source changed'
         } else {
