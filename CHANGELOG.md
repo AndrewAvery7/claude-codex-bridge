@@ -25,6 +25,15 @@
   on 2026-07-26. Upstream `main` is still at `db52e28` (2026-07-07) and
   `codex.mjs` still hashes to `fead00cc44c8b945a292481c490ba0a50b0c5c64`, so the
   bug and this kit's workaround are both unchanged.
+- Static compatibility check of Codex CLI 0.149.0, recorded in
+  docs/TESTING.md: unpacking the shipped `@openai/codex@0.149.0-win32-x64`
+  binary shows `state_5.sqlite`, the `threads` columns this kit reads (`id`,
+  `created_at`, `cwd`, `title`), the `external_agent_session_imports.json`
+  record fields and the `codex://threads/` route all unchanged from the 0.145.0
+  the kit was verified against — every `threads` migration since is additive and
+  `created_at` is still written on insert. The schema drift the caveat warns
+  about has not happened, so no engine change is needed; the live end-to-end
+  re-run is tracked in #8.
 - Plugin identifier renamed `codex-bridge` → `claude-codex-bridge` (in
   `plugins/codex-bridge/.claude-plugin/plugin.json` and the repo's own
   `.claude-plugin/marketplace.json`). The name `codex-bridge` was already taken
