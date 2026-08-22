@@ -3,6 +3,33 @@
 ## Unreleased
 
 ### Fixed
+- Six engine bugs, each with a regression test that fails without its fix:
+  - `pick` accepted `0` and negative answers and passed them straight to a list
+    index, so `0` silently transferred the *oldest* session and `-1` the
+    second-oldest - a session the user had not chosen. Out-of-range answers are
+    now refused (`choice_index()`).
+  - The macOS terminal launch built its AppleScript by interpolating the resume
+    command raw. That command already quotes any path containing a space, and
+    those quotes closed the AppleScript string early; the working directory was
+    not shell-quoted either, so a Mac path like `~/My Projects` broke `cd`. Both
+    layers are now quoted correctly (`applescript_do_script()`).
+  - `recent_sessions()` called `stat()` on every transcript found by `glob()`,
+    so a transcript rotated away mid-scan - or a dangling symlink - crashed
+    `pick` and `doctor` with `FileNotFoundError`. Unreadable entries are now
+    skipped, and each file is stat'd once instead of three times.
+  - `codex-thread-query.py --ledger` could never match a UNC path: it stripped
+    the `\\?\` prefix but not `\\?\UNC\`, leaving `UNC\server\share` to be
+    compared against `\\server\share`. The engine already handled this; the
+    helper now applies the same rule, and a test asserts the two implementations
+    agree so they cannot drift apart again.
+  - The same helper crashed with `KeyError` on a ledger record that has no
+    `imported_thread_id`, and with `JSONDecodeError` on a half-written ledger.
+    Both are now treated as a miss, matching the engine.
+  - `codex-thread-query.py` folded case and separators on POSIX too, so
+    `/home/A` and `/home/a` compared equal on a case-sensitive filesystem. The
+    Windows path rules now apply only on Windows.
+- `--cwd` was a working, tested option of `codex-thread-query.py` that its own
+  usage text never mentioned.
 - Corrected this changelog's and the README's description of
   [openai/codex-plugin-cc#551](https://github.com/openai/codex-plugin-cc/pull/551).
   Both called it a separate or "rival" attempt at the upstream fix that was

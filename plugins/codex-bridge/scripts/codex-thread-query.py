@@ -6,6 +6,7 @@ Usage:
   codex-thread-query.py --recent [N]         print N most recent threads: id|created_at|title
   codex-thread-query.py --ledger <source>    print thread id previously imported for this Claude
                                              transcript path (Codex dedupes unchanged re-imports)
+  codex-thread-query.py --cwd <id>           print the working directory a thread was started in
 """
 import json
 import sqlite3
@@ -17,8 +18,23 @@ LEDGER = Path.home() / ".codex" / "external_agent_session_imports.json"
 
 
 def normalize(p):
-    # Ledger paths carry the \\?\ extended prefix and mixed separators
-    return str(p).replace("\\\\?\\", "").replace("/", "\\").lower()
+    r"""Make a ledger path comparable to a resolved filesystem path.
+
+    Must agree with normalize_ledger_path() in codex_bridge.py - the engine and
+    this helper answer the same question and a divergence would make one of them
+    silently wrong. Codex records Windows paths with the \\?\ extended-length
+    prefix, and network paths as \\?\UNC\server\share, which is the same
+    location as \\server\share. Strip both, then fold separators and case the
+    way Windows compares paths - but not on POSIX, where they are significant.
+    """
+    s = str(p)
+    if sys.platform != "win32":
+        return s
+    if s.startswith("\\\\?\\UNC\\"):
+        s = "\\\\" + s[8:]
+    elif s.startswith("\\\\?\\"):
+        s = s[4:]
+    return s.replace("/", "\\").lower()
 
 
 def connect():
@@ -31,8 +47,14 @@ def main(argv):
         source = normalize(argv[argv.index("--ledger") + 1])
         if not LEDGER.exists():
             return 1
-        records = json.loads(LEDGER.read_text(encoding="utf-8")).get("records", [])
-        hits = [r for r in records if normalize(r.get("source_path", "")) == source]
+        try:
+            records = json.loads(LEDGER.read_text(encoding="utf-8")).get("records", [])
+        except (OSError, ValueError):
+            return 1  # a half-written or corrupt ledger is a miss, not a crash
+        hits = [
+            r for r in records
+            if normalize(r.get("source_path", "")) == source and r.get("imported_thread_id")
+        ]
         if not hits:
             return 1
         best = max(hits, key=lambda r: r.get("imported_at", 0))

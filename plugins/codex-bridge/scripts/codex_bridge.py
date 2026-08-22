@@ -27,6 +27,7 @@ import argparse
 import json
 import os
 import platform
+import shlex
 import shutil
 import sqlite3
 import subprocess
@@ -144,8 +145,7 @@ def launch_terminal(command: str, cwd: Path | None = None) -> bool:
             return True
         if IS_MAC:
             # osascript keeps the window open after the command finishes.
-            script = f'tell application "Terminal" to do script "cd {_q(workdir)} && {command}"'
-            subprocess.run(["osascript", "-e", script], check=True)
+            subprocess.run(["osascript", "-e", applescript_do_script(command, workdir)], check=True)
             subprocess.run(["open", "-a", "Terminal"], check=False)
             return True
         for term, args in (
@@ -166,8 +166,21 @@ def launch_terminal(command: str, cwd: Path | None = None) -> bool:
 
 
 def _q(s: str) -> str:
-    """Quote a path for embedding in an AppleScript double-quoted string."""
+    """Escape a string for embedding in an AppleScript double-quoted literal."""
     return s.replace("\\", "\\\\").replace('"', '\\"')
+
+
+def applescript_do_script(command: str, workdir: str) -> str:
+    """AppleScript that runs `command` in `workdir` in a new Terminal window.
+
+    Two layers of quoting have to be right, and getting either wrong silently
+    runs the wrong thing: the shell needs `workdir` quoted (Mac home paths and
+    project names contain spaces), and AppleScript needs the whole resulting
+    command escaped, because `command` already carries double quotes around any
+    path with a space in it - unescaped they would end the AppleScript string.
+    """
+    shell_command = f"cd {shlex.quote(workdir)} && {command}"
+    return f'tell application "Terminal" to do script "{_q(shell_command)}"'
 
 
 def default_open_target() -> str:
@@ -393,12 +406,16 @@ def cmd_transfer(args: argparse.Namespace) -> int:
 def recent_sessions(limit: int = 10) -> list[tuple[Path, float, str]]:
     if not CLAUDE_PROJECTS.is_dir():
         return []
-    files = sorted(
-        CLAUDE_PROJECTS.glob("*/*.jsonl"),
-        key=lambda p: p.stat().st_mtime,
-        reverse=True,
-    )[:limit]
-    return [(p, p.stat().st_mtime, session_preview(p)) for p in files]
+    # Stat once per file, and tolerate a transcript being rotated away
+    # underneath us - Claude Code writes this directory while we read it.
+    stamped: list[tuple[Path, float]] = []
+    for p in CLAUDE_PROJECTS.glob("*/*.jsonl"):
+        try:
+            stamped.append((p, p.stat().st_mtime))
+        except OSError:
+            continue
+    stamped.sort(key=lambda pair: pair[1], reverse=True)
+    return [(p, mtime, session_preview(p)) for p, mtime in stamped[:limit]]
 
 
 def session_preview(path: Path, max_len: int = 68) -> str:
@@ -435,6 +452,21 @@ def session_preview(path: Path, max_len: int = 68) -> str:
     return "(no preview)"
 
 
+def choice_index(raw: str, count: int) -> int | None:
+    """Zero-based index for a picker answer, or None if it is not a valid pick.
+
+    Empty input means the first (most recent) session. Anything outside
+    1..count is rejected rather than passed to a list: Python would happily
+    read `0` as the *last* session and `-1` as the second-to-last, quietly
+    transferring a session the user did not choose.
+    """
+    try:
+        n = int(raw) if raw else 1
+    except ValueError:
+        return None
+    return n - 1 if 1 <= n <= count else None
+
+
 def cmd_pick(args: argparse.Namespace) -> int:
     sessions = recent_sessions()
     if not sessions:
@@ -452,13 +484,11 @@ def cmd_pick(args: argparse.Namespace) -> int:
         return 0
     if raw.lower().startswith("q"):
         return 0
-    try:
-        idx = int(raw) if raw else 1
-        chosen = sessions[idx - 1][0]
-    except (ValueError, IndexError):
+    idx = choice_index(raw, len(sessions))
+    if idx is None:
         print("Not a valid choice.", file=sys.stderr)
         return 1
-    args.source = str(chosen)
+    args.source = str(sessions[idx][0])
     return cmd_transfer(args)
 
 
