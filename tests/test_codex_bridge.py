@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import importlib
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -299,6 +300,53 @@ def test_wait_window_is_adjustable_and_defaults_to_sixty():
 # Windows binary resolution - a path can be on PATH and still refuse to run
 # ---------------------------------------------------------------------------
 
+def test_which_all_returns_every_path_hit_not_just_the_first(tmp_path, monkeypatch):
+    cb = _reload_as("linux")
+    first, second = tmp_path / "a", tmp_path / "b"
+    first.mkdir()
+    second.mkdir()
+    (first / "codex").write_text("#!/bin/sh\n", encoding="utf-8")
+    (second / "codex").write_text("#!/bin/sh\n", encoding="utf-8")
+    monkeypatch.setenv("PATH", os.pathsep.join([str(first), str(second)]))
+    found = cb.which_all("codex")
+    # Order matters: PATH order is the caller's preference order.
+    assert found == [str(first / "codex"), str(second / "codex")]
+
+
+def test_which_all_is_empty_when_nothing_matches(tmp_path, monkeypatch):
+    cb = _reload_as("linux")
+    monkeypatch.setenv("PATH", str(tmp_path))
+    assert cb.which_all("codex") == []
+
+
+def test_npm_appdata_is_only_rejected_inside_a_packaged_container(monkeypatch):
+    cb = _reload_as("win32")
+    npm_codex = r"C:\Users\someone\AppData\Roaming\npm\codex.cmd"
+
+    # Outside a container %APPDATA%\npm is an ordinary executable directory.
+    monkeypatch.setenv("APPDATA", r"C:\Users\someone\AppData\Roaming")
+    assert not cb._is_unusable_windows_path(npm_codex)
+
+    # Inside one it is the app's private store, invisible to other processes.
+    monkeypatch.setenv(
+        "APPDATA",
+        r"C:\Users\someone\AppData\Local\Packages\Some.App_abc\LocalCache\Roaming",
+    )
+    assert cb._is_unusable_windows_path(
+        r"C:\Users\someone\AppData\Local\Packages\Some.App_abc\LocalCache\Roaming\npm\codex.cmd"
+    )
+
+
+def test_program_files_windowsapps_payload_is_rejected():
+    cb = _reload_as("win32")
+    # Not the alias directory - the real MSIX payload, which Windows refuses to
+    # execute from another process. Observed on a real machine 2026-08-22:
+    # `codex --version` there exits 1 with access denied.
+    payload = (r"C:\Program Files\WindowsApps\OpenAI.Codex_26.818.5229.0_x64__2p2nqsd0c76g0"
+               r"\app\resources\codex.exe")
+    assert cb._is_unusable_windows_path(payload)
+
+
 def test_windowsapps_alias_is_rejected():
     cb = _reload_as("win32")
     # A Store app-execution alias: resolves on PATH, then a spawned process is
@@ -307,12 +355,6 @@ def test_windowsapps_alias_is_rejected():
     assert cb._is_unusable_windows_path(alias)
     assert cb._is_unusable_windows_path(alias.lower())
     assert cb._is_unusable_windows_path(alias.replace("\\", "/"))
-
-
-def test_virtualized_npm_path_is_still_rejected(monkeypatch):
-    cb = _reload_as("win32")
-    monkeypatch.setenv("APPDATA", r"C:\Users\someone\AppData\Roaming")
-    assert cb._is_unusable_windows_path(r"C:\Users\someone\AppData\Roaming\npm\codex.cmd")
 
 
 def test_real_looking_exe_is_accepted(tmp_path):
