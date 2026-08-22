@@ -80,21 +80,25 @@ def codex_command() -> str | None:
     """Absolute path to the codex binary, usable from any process.
 
     Never return a bare "codex": a terminal we spawn may not share our PATH.
-    On Windows there is an extra trap - `npm -g` run inside a packaged (MSIX)
-    desktop app installs into that app's virtualised Roaming directory, which
-    external processes cannot resolve. The container's LocalCache backing store
-    is real for everyone, and the vendored exe there is standalone.
+    On Windows a path can be on PATH, resolve fine, and still refuse to run -
+    see _is_unusable_windows_path. When that happens, fall through to a real
+    exe: the desktop app's own bin directory, then the vendored exe inside the
+    packaged app's LocalCache backing store, which is real for every process.
     """
     found = shutil.which("codex")
-    if found and not (IS_WIN and _is_virtualized_npm(found)):
+    if found and not (IS_WIN and _is_unusable_windows_path(found)):
         return found
 
     if IS_WIN:
+        local = Path(os.environ.get("LOCALAPPDATA", HOME / "AppData/Local"))
+        # Desktop (MSIX) install writes a real exe here, outside both traps.
+        direct = local / "Programs" / "OpenAI" / "Codex" / "bin" / "codex.exe"
+        if direct.is_file():
+            return str(direct)
         pattern = (
             "Packages/*/LocalCache/Roaming/npm/node_modules/@openai/codex/"
             "node_modules/@openai/codex-win32-x64/vendor/*/bin/codex.exe"
         )
-        local = Path(os.environ.get("LOCALAPPDATA", HOME / "AppData/Local"))
         for candidate in sorted(local.glob(pattern)):
             return str(candidate)
 
@@ -110,10 +114,37 @@ def codex_command() -> str | None:
     return found  # may be None
 
 
-def _is_virtualized_npm(p: str) -> bool:
-    """True for a Windows path that only resolves inside an app container."""
+def _is_unusable_windows_path(p: str) -> bool:
+    r"""True for a Windows `codex` path that a spawned process cannot execute.
+
+    Two traps, and both of them resolve happily on PATH before failing at exec
+    time - which is worse than not being found at all, because the failure
+    surfaces as a Codex problem rather than a path problem:
+
+    - `npm -g` run inside a packaged (MSIX) desktop app installs into that
+      app's virtualised Roaming directory, invisible outside the container.
+    - `%LOCALAPPDATA%\Microsoft\WindowsApps\codex.exe` is a Store
+      app-execution alias: a zero-length reparse point the shell resolves for
+      you, and that a spawned process is denied with "Access is denied".
+
+    The zero-length check catches an alias wherever it lives, since a real
+    executable is never empty.
+    """
+    # Compare as plain strings with one separator convention. Building the
+    # prefix with pathlib joins using the *host* separator, which silently
+    # stops matching the moment the two sides disagree.
+    low = p.lower().replace("/", "\\")
     appdata = os.environ.get("APPDATA", "")
-    return bool(appdata) and p.lower().startswith(str(Path(appdata) / "npm").lower())
+    if appdata:
+        npm_root = (appdata.rstrip("\\/") + "\\npm").lower().replace("/", "\\")
+        if low.startswith(npm_root):
+            return True
+    if "\\windowsapps\\" in low:
+        return True
+    try:
+        return Path(p).stat().st_size == 0
+    except OSError:
+        return False
 
 
 def open_url(url: str) -> bool:
