@@ -338,6 +338,39 @@ def companion_script() -> Path | None:
 # transfer
 # ---------------------------------------------------------------------------
 
+def wait_for_import(
+    before: int,
+    ledger_before: str | None,
+    source: Path,
+    wait_s: int,
+    sleep=time.sleep,
+    monotonic=time.monotonic,
+) -> tuple[str, str] | None:
+    """Wait for an import to show up, as either a new thread or a new ledger record.
+
+    The importer returning is not the same as Codex having finished: the thread
+    row lands asynchronously, and on a slow machine or a large transcript it can
+    land well after. Giving up too early and calling that a failure is the exact
+    mistake this kit exists to work around upstream - an import that worked,
+    reported as broken - so the window is generous and adjustable rather than a
+    fixed count of one-second ticks.
+
+    A ledger record that is *new* since we started means this import landed,
+    late; the pre-existing one means a dedupe, which the caller handles.
+    """
+    deadline = monotonic() + max(1, wait_s)
+    while True:
+        found = thread_created_after(before)
+        if found:
+            return found
+        ledger_now = ledger_thread_for(source)
+        if ledger_now and ledger_now != ledger_before:
+            return (ledger_now, "")
+        if monotonic() >= deadline:
+            return None
+        sleep(1)
+
+
 def cmd_transfer(args: argparse.Namespace) -> int:
     source = Path(args.source).expanduser()
     if not source.is_file():
@@ -367,26 +400,23 @@ def cmd_transfer(args: argparse.Namespace) -> int:
     print(f"  source: {source}")
 
     before = max_thread_created()
+    ledger_before = ledger_thread_for(source)
     proc = subprocess.run(
         ["node", str(companion), "transfer", "--source", str(source)],
         capture_output=True, text=True, env=importer_env(),
     )
     importer_output = (proc.stdout or "") + (proc.stderr or "")
 
-    thread_id = title = None
     reused = False
-    for _ in range(15):  # poll: the import lands asynchronously
-        found = thread_created_after(before)
-        if found:
-            thread_id, title = found
-            break
-        time.sleep(1)
-
-    if thread_id is None:
-        thread_id = ledger_thread_for(source)
-        if thread_id:
-            reused = True
-            title = ""
+    found = wait_for_import(before, ledger_before, source, args.wait)
+    if found:
+        thread_id, title = found
+    elif ledger_before:
+        # No new thread and no new ledger record: Codex deduped an unchanged
+        # transcript, so the right answer is the thread it made last time.
+        thread_id, title, reused = ledger_before, "", True
+    else:
+        thread_id = title = None
 
     if thread_id is None:
         print("ERROR: no new Codex thread appeared, and no prior import of this", file=sys.stderr)
@@ -395,7 +425,8 @@ def cmd_transfer(args: argparse.Namespace) -> int:
         for line in importer_output.splitlines():
             if line.strip() and not any(n in line for n in noise):
                 print(f"       importer: {line.strip()}", file=sys.stderr)
-        print("       Try 'codex resume' - a slow import can land late.", file=sys.stderr)
+        print(f"       Waited {args.wait}s. Try 'codex resume' - a slow import can", file=sys.stderr)
+        print("       land later still, and --wait raises the window.", file=sys.stderr)
         return 1
 
     if reused:
@@ -663,6 +694,10 @@ def main(argv: list[str] | None = None) -> int:
     def add_transfer_args(p: argparse.ArgumentParser) -> None:
         p.add_argument("--model", default="", help="Codex model id for the resumed session")
         p.add_argument("--effort", default="", help="reasoning effort override")
+        p.add_argument(
+            "--wait", type=int, default=60,
+            help="seconds to wait for the import to land (default: 60)",
+        )
         p.add_argument(
             "--open", default="auto", choices=["auto", "app", "vscode", "terminal", "none"],
             help="where to open the thread (default: auto)",

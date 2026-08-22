@@ -3,6 +3,20 @@
 ## Unreleased
 
 ### Fixed
+- The engine called a slow import a failed one. `cmd_transfer` polled for the
+  new thread fifteen times at one-second intervals and then gave up; on a real
+  machine a genuine first import landed *after* that window, so the transfer
+  reported ERROR for an import that had in fact succeeded - the very mistake
+  this kit exists to work around upstream, arrived at by a different route.
+  The wait is now 60 seconds by default and adjustable with `--wait`, and it
+  watches two signals rather than one: a new thread row, or a ledger record
+  that was not there before the import started (a late landing). A record that
+  predates the import still means dedupe, and is still reported as a reuse.
+- `tools/verify-codex-release.ps1` exited 0 even when scenarios FAILED, so a
+  failed verification looked like a clean run to anything checking the exit
+  code. It now exits 1 if any scenario failed, and counts scenarios it could
+  not exercise separately - those are gaps, not failures.
+
 - `tools/verify-codex-release.ps1` labelled a scenario "T1 fresh import" while
   only checking that the engine printed a thread id - which it does for a
   deduped reuse just as much as for a first import. On a real machine T1
