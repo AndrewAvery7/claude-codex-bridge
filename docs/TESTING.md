@@ -12,10 +12,30 @@ machine on 2026-07-24, against these versions:
 | Claude Code | desktop app, July 2026 |
 | Windows | 11 Pro 26200, PowerShell 5.1 |
 
-> **Re-verification due (2026-08-10):** npm now lists `@openai/codex` 0.147.0
-> as latest — two releases ahead of the 0.145.0 verified above. The table
-> has not been re-run against a newer Codex install; treat it as valid for
-> 0.145.0 only.
+> **Re-verification status (2026-08-22):** npm now lists `@openai/codex` 0.149.0
+> as latest (published 2026-08-20) — four stable minors ahead of the 0.145.0
+> verified above. The live table has **not** been re-run against a newer Codex
+> install; treat the results below as observed on 0.145.0 only. The outstanding
+> live run is tracked in
+> [#8](https://github.com/AndrewAvery7/claude-codex-bridge/issues/8).
+>
+> A **static** compatibility check of the shipped 0.149.0 Windows binary
+> (`@openai/codex@0.149.0-win32-x64`,
+> `vendor/x86_64-pc-windows-msvc/bin/codex.exe`) was done on 2026-08-22, and
+> every internal this kit reads is intact:
+>
+> | Internal the kit depends on | Status in 0.149.0 |
+> |---|---|
+> | `~/.codex/state_5.sqlite` | Still the only `state_N.sqlite` in the binary; no `state_6` |
+> | `threads` columns `id` / `created_at` / `cwd` / `title` | All present; every migration since is an additive `ADD COLUMN`, no rename or drop |
+> | `created_at` still populated | Yes — `INSERT INTO threads` writes it alongside the newer `created_at_ms` |
+> | `external_agent_session_imports.json` | Same filename; `records[]` still carries `source_path`, `imported_thread_id`, `imported_at` |
+> | `codex://threads/<id>` | Still a registered route (`codex://threads/`, `codex://threads/new`) |
+>
+> This proves the shapes still exist, not that the flow still works — that is
+> what the live re-run is for. The VS Code route
+> (`vscode://openai.chatgpt/local/<id>`) ships in the extension rather than the
+> CLI, so this check says nothing about it.
 
 Identifiers below are synthesized (`0199aaaa-...`) — the shapes and outcomes
 are as observed.

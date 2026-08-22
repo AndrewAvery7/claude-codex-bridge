@@ -44,7 +44,10 @@ moves with it. Transfer deliberately, the same way you would treat any export.
 
 ## Supported versions
 
-Only the latest release is supported. Verified against Codex CLI 0.145,
-VS Code extension 26.721, and codex-plugin-cc 1.0.6 - see the caveats in the
-[README](README.md#caveats-honest-edges) about relying on undocumented Codex
-internals.
+Only the latest release is supported. Verified end-to-end against Codex CLI
+0.145, VS Code extension 26.721, and codex-plugin-cc 1.0.6 - see the caveats in
+the [README](README.md#caveats-honest-edges) about relying on undocumented Codex
+internals. A static check on 2026-08-22 found the internals this kit reads
+unchanged in Codex CLI 0.149.0 ([docs/TESTING.md](docs/TESTING.md)), but the
+end-to-end run has not been repeated on it, so the supported-version statement
+above stays pinned to the last verified install.
