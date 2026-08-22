@@ -177,6 +177,132 @@ def test_agents_md_cap_matches_codex_default():
     assert cb.AGENTS_MD_CAP == 32768
 
 
+# ---------------------------------------------------------------------------
+# picker choice - an out-of-range answer must be refused, never reinterpreted
+# ---------------------------------------------------------------------------
+
+def test_choice_index_accepts_valid_picks():
+    cb = importlib.reload(codex_bridge)
+    assert cb.choice_index("1", 3) == 0
+    assert cb.choice_index("3", 3) == 2
+    assert cb.choice_index("", 3) == 0      # Enter means the most recent session
+    assert cb.choice_index(" 2 ".strip(), 3) == 1
+
+
+def test_choice_index_rejects_out_of_range_and_junk():
+    cb = importlib.reload(codex_bridge)
+    # Python would read these as list indices and transfer a session the user
+    # never picked: 0 -> the oldest, -1 -> the second-to-oldest.
+    assert cb.choice_index("0", 3) is None
+    assert cb.choice_index("-1", 3) is None
+    assert cb.choice_index("4", 3) is None
+    assert cb.choice_index("abc", 3) is None
+
+
+# ---------------------------------------------------------------------------
+# macOS terminal launch - two layers of quoting, both of which must hold
+# ---------------------------------------------------------------------------
+
+def test_applescript_quotes_workdir_and_escapes_command():
+    cb = importlib.reload(codex_bridge)
+    script = cb.applescript_do_script('"/Users/me/My Tools/codex" resume abc-123',
+                                      "/Users/me/My Projects")
+    # The shell must see one argument for cd, not two.
+    assert "cd '/Users/me/My Projects'" in script
+    # The command's own quotes must not terminate the AppleScript string early:
+    # everything between the outer quotes is the script, so the only unescaped
+    # double quotes in the whole line are the four AppleScript delimiters.
+    assert script.count('"') - script.count('\\"') == 4
+    assert '\\"/Users/me/My Tools/codex\\"' in script
+
+
+# ---------------------------------------------------------------------------
+# recent_sessions - the transcripts directory is written while we read it
+# ---------------------------------------------------------------------------
+
+def test_recent_sessions_skips_unreadable_entries(tmp_path, monkeypatch):
+    cb = importlib.reload(codex_bridge)
+    proj = tmp_path / "proj"
+    proj.mkdir()
+    real = proj / "real.jsonl"
+    real.write_text("{}", encoding="utf-8")
+    try:
+        # A dangling symlink: glob still lists it, but stat() raises.
+        (proj / "vanished.jsonl").symlink_to(proj / "gone.jsonl")
+    except (OSError, NotImplementedError):  # Windows without symlink privilege
+        pass
+    monkeypatch.setattr(cb, "CLAUDE_PROJECTS", tmp_path)
+    found = cb.recent_sessions()
+    assert [p.name for p, _, _ in found] == ["real.jsonl"]
+
+
+# ---------------------------------------------------------------------------
+# the path rule is implemented twice - the copies must not drift apart
+# ---------------------------------------------------------------------------
+
+def _load_query_helper():
+    import importlib.util
+
+    path = ENGINE / "codex-thread-query.py"
+    spec = importlib.util.spec_from_file_location("codex_thread_query", path)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+def test_query_helper_path_rule_matches_the_engine():
+    q = _load_query_helper()
+    cases = [
+        r"\\?\C:\Users\Someone\.claude\projects\p\a.jsonl",
+        r"C:\Users\someone\.claude\projects\p\a.jsonl",
+        r"\\?\UNC\server\share\a.jsonl",
+        r"\\server\share\a.jsonl",
+        "/home/someone/.claude/projects/p/a.jsonl",
+    ]
+    for plat in ("win32", "linux"):
+        cb = _reload_as(plat)
+        real = sys.platform
+        sys.platform = plat
+        try:
+            for c in cases:
+                assert q.normalize(c) == cb.normalize_ledger_path(c), (plat, c)
+        finally:
+            sys.platform = real
+
+
+def test_query_helper_matches_unc_ledger_records():
+    q = _load_query_helper()
+    real = sys.platform
+    sys.platform = "win32"
+    try:
+        # \\?\UNC\server\share and \\server\share are the same location.
+        assert q.normalize(r"\\?\UNC\srv\share\x.jsonl") == q.normalize(r"\\srv\share\x.jsonl")
+    finally:
+        sys.platform = real
+
+
+def test_query_helper_ledger_tolerates_bad_input(tmp_path, monkeypatch):
+    q = _load_query_helper()
+    ledger = tmp_path / "ledger.json"
+    monkeypatch.setattr(q, "LEDGER", ledger)
+
+    # A record with no imported_thread_id is a miss, not a KeyError.
+    ledger.write_text(json.dumps({"records": [
+        {"source_path": "/p/x.jsonl", "imported_at": 5},
+    ]}), encoding="utf-8")
+    assert q.main(["--ledger", "/p/x.jsonl"]) == 1
+
+    # A half-written ledger is a miss, not a JSONDecodeError.
+    ledger.write_text("{not json", encoding="utf-8")
+    assert q.main(["--ledger", "/p/x.jsonl"]) == 1
+
+    # A good record still resolves.
+    ledger.write_text(json.dumps({"records": [
+        {"source_path": "/p/x.jsonl", "imported_thread_id": "t-1", "imported_at": 5},
+    ]}), encoding="utf-8")
+    assert q.main(["--ledger", "/p/x.jsonl"]) == 0
+
+
 if __name__ == "__main__":  # allow running without pytest
     try:
         import pytest
