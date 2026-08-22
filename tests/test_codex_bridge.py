@@ -313,6 +313,18 @@ def test_which_all_returns_every_path_hit_not_just_the_first(tmp_path, monkeypat
     assert found == [str(first / "codex"), str(second / "codex")]
 
 
+def test_codex_command_survives_a_machine_with_no_codex(tmp_path, monkeypatch):
+    cb = _reload_as("linux")
+    # A machine with no codex at all is a supported state - `doctor` calls this
+    # precisely to report NOT FOUND. Walking an empty candidate list used to
+    # raise UnboundLocalError, which CI's doctor smoke-run caught and these
+    # tests did not.
+    monkeypatch.setenv("PATH", "")
+    monkeypatch.setattr(cb, "HOME", tmp_path)
+    result = cb.codex_command()
+    assert result is None or isinstance(result, str)
+
+
 def test_which_all_is_empty_when_nothing_matches(tmp_path, monkeypatch):
     cb = _reload_as("linux")
     monkeypatch.setenv("PATH", str(tmp_path))

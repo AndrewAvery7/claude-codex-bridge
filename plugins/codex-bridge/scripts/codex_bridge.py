@@ -85,9 +85,10 @@ def codex_command() -> str | None:
     exe: the desktop app's own bin directory, then the vendored exe inside the
     packaged app's LocalCache backing store, which is real for every process.
     """
-    for found in which_all("codex"):
-        if not (IS_WIN and _is_unusable_windows_path(found)):
-            return found
+    candidates = which_all("codex")
+    for candidate in candidates:
+        if not (IS_WIN and _is_unusable_windows_path(candidate)):
+            return candidate
 
     if IS_WIN:
         local = Path(os.environ.get("LOCALAPPDATA", HOME / "AppData/Local"))
@@ -111,7 +112,9 @@ def codex_command() -> str | None:
     ):
         if candidate.exists():
             return str(candidate)
-    return found  # may be None
+    # Nothing usable anywhere. Hand back the first PATH hit if there was one, so
+    # the caller can at least name what it found; None if PATH held nothing.
+    return candidates[0] if candidates else None
 
 
 def which_all(name: str) -> list[str]:
