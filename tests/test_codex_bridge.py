@@ -178,6 +178,43 @@ def test_agents_md_cap_matches_codex_default():
 
 
 # ---------------------------------------------------------------------------
+# a failed transfer must say why - the filter used to swallow the whole answer
+# ---------------------------------------------------------------------------
+
+def test_diagnosis_always_reports_the_exit_code():
+    cb = importlib.reload(codex_bridge)
+    assert cb.importer_diagnosis("", 0)[0] == "importer exit code: 0"
+    assert cb.importer_diagnosis("boom", 3)[0] == "importer exit code: 3"
+
+
+def test_diagnosis_shows_real_importer_output():
+    cb = importlib.reload(codex_bridge)
+    lines = cb.importer_diagnosis("Error: ENOENT missing thing\n", 1)
+    assert "importer: Error: ENOENT missing thing" in lines
+    assert not any("known noise" in ln for ln in lines)
+
+
+def test_diagnosis_shows_noise_raw_when_it_is_all_there_is():
+    cb = importlib.reload(codex_bridge)
+    # Both of these are filtered from normal reporting. Filtering them here
+    # would leave an error message containing no evidence whatsoever.
+    only_noise = (
+        "(node:1) [DEP0190] DeprecationWarning: something\n"
+        "Codex reported that the Claude import completed, but did not record an "
+        "imported thread.\n"
+    )
+    lines = cb.importer_diagnosis(only_noise, 1)
+    assert any("known noise" in ln for ln in lines)
+    assert any("did not record an imported thread" in ln for ln in lines)
+
+
+def test_diagnosis_says_so_when_the_importer_was_silent():
+    cb = importlib.reload(codex_bridge)
+    lines = cb.importer_diagnosis("   \n\n", 0)
+    assert any("printed nothing at all" in ln for ln in lines)
+
+
+# ---------------------------------------------------------------------------
 # import detection - a slow import is not a failed one
 # ---------------------------------------------------------------------------
 
