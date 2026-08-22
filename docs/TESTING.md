@@ -12,14 +12,49 @@ machine on 2026-07-24, against these versions:
 | Claude Code | desktop app, July 2026 |
 | Windows | 11 Pro 26200, PowerShell 5.1 |
 
-> **Re-verification status (2026-08-22):** npm now lists `@openai/codex` 0.149.0
-> as latest (published 2026-08-20) — four stable minors ahead of the 0.145.0
-> verified above. The live table has **not** been re-run against a newer Codex
-> install; treat the results below as observed on 0.145.0 only. The outstanding
-> live run is tracked in
-> [#8](https://github.com/AndrewAvery7/claude-codex-bridge/issues/8).
+> **Re-verified on 0.149.0 (2026-08-22).** The live scenarios were re-run on
+> Windows against Codex CLI 0.149.0 — see the section below. Everything the
+> script can assert automatically passes except a first import, which it could
+> not set up; the two deep links still need a human. The table above stays as
+> the 2026-07-24 record; the newer results are their own section.
 
-## Partial re-run, 2026-08-22 (Codex CLI still 0.145.0)
+## Re-run on Codex CLI 0.149.0, 2026-08-22
+
+Run with `tools/verify-codex-release.ps1 -RunTransfers` on Windows, after the
+CLI was upgraded and the engine was fixed to resolve it (see below).
+
+| Component | Version |
+|---|---|
+| Codex CLI | 0.149.0, resolved to `%APPDATA%\npm\codex.CMD` |
+| codex-plugin-cc | 1.0.6 |
+| Codex desktop app | 26.818.5229.0 |
+| `threads` table | 38 columns, all four the engine reads present, 410 rows |
+| import ledger | 292 records |
+| `codex://` handler | registered |
+
+| # | Result on 0.149.0 |
+|---|---|
+| T0 engine resolves a thread | PASS |
+| T1 fresh import | NOT EXERCISED - every recent settled transcript was already in the ledger |
+| T3 dedupe | PASS - reused the prior thread |
+| T4 model and effort flags | PASS |
+| T5 absolute binary path | PASS - the emitted resume command uses the resolved `codex.CMD` |
+| T6 thread working directory | PASS |
+| O1 / O2 deep links | not run - they need a human looking at a screen |
+
+Getting here took six engine fixes, every one of them found by running the
+thing on Windows rather than reasoning about it from a Linux container:
+
+1. A Windows Store app-execution alias returned as an executable path.
+2. A successful import reported as a failure once it outran a fixed
+   15-second detection window.
+3. A failed transfer whose only diagnostic was filtered away as known noise.
+4. Resolution that gave up after the first PATH candidate.
+5. An `%APPDATA%\npm` guard that rejected the user's real install.
+6. A PATH walk that preferred npm's extensionless Git Bash shim, which
+   Windows cannot execute, over the `codex.cmd` beside it.
+
+## Earlier partial re-run, 2026-08-22 (Codex CLI still 0.145.0)
 
 Run with `tools/verify-codex-release.ps1 -RunTransfers` on Windows. The CLI had
 not moved, so this does **not** retire the note above — what it establishes is
