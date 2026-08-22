@@ -19,9 +19,19 @@
 #   .\tools\verify-codex-release.ps1
 #   .\tools\verify-codex-release.ps1 -RunTransfers
 #   .\tools\verify-codex-release.ps1 -RunTransfers -Source C:\path\to\session.jsonl
+#   .\tools\verify-codex-release.ps1 -RunTransfers -SynthesizeFreshSource
+#
+# -SynthesizeFreshSource makes T1 possible when every settled transcript has
+# already been imported, which is the usual state on a machine that has been
+# transferring sessions. It copies the chosen transcript beside itself under a
+# new name and appends a blank line - enough to change the content hash Codex
+# dedupes on, without altering a single record - and deletes the copy at the
+# end of the run. It writes one temporary file into ~/.claude/projects, which
+# is why it is opt-in rather than the default.
 
 param(
     [switch]$RunTransfers,
+    [switch]$SynthesizeFreshSource,
     [string]$Source = ''
 )
 
@@ -247,6 +257,27 @@ if ($RunTransfers) {
     }
     $expectFresh = $false
     if ($Source) { $expectFresh = -not $imported.ContainsKey($Source.ToLower()) }
+
+    $synthesized = $null
+    if ($SynthesizeFreshSource -and $Source -and -not $expectFresh) {
+        # Nothing on disk can produce a first import, so make something that
+        # can. A byte-identical copy would still dedupe - Codex keys on content
+        # - so append a blank line: the hash moves, every record is untouched.
+        $synthName = ('verify-fresh-{0}.jsonl' -f [guid]::NewGuid().ToString())
+        $synthPath = Join-Path (Split-Path -Parent $Source) $synthName
+        try {
+            Copy-Item -LiteralPath $Source -Destination $synthPath -ErrorAction Stop
+            Add-Content -LiteralPath $synthPath -Value ''
+            $synthesized = $synthPath
+            $Source = $synthPath
+            $expectFresh = $true
+            Add-Line ('Synthesized a never-imported source for T1: `{0}`' -f $synthName)
+            Add-Line ''
+        } catch {
+            Add-Line ('Could not synthesize a fresh source: {0}' -f $_.Exception.Message)
+            Add-Line ''
+        }
+    }
     if (-not $Source) {
         Add-Line 'No transcript found under ~/.claude/projects - cannot run T1/T3/T4.'
     } else {
@@ -321,6 +352,13 @@ if ($RunTransfers) {
             Add-Line 'O1/O2 need your eyes - these open the app and the VS Code panel:'
             Add-Line ('    Start-Process "codex://threads/{0}"' -f $threadId)
             Add-Line ('    Start-Process "vscode://openai.chatgpt/local/{0}"' -f $threadId)
+        }
+
+        if ($synthesized -and (Test-Path $synthesized)) {
+            Remove-Item -LiteralPath $synthesized -Force -ErrorAction SilentlyContinue
+            Add-Line ''
+            Add-Line ('Removed the synthesized transcript `{0}`. The Codex thread it' -f (Split-Path -Leaf $synthesized))
+            Add-Line 'created stays, like the other scenario threads.'
         }
     }
 } else {
