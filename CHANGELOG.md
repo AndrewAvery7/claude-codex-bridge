@@ -3,6 +3,27 @@
 ## Unreleased
 
 ### Fixed
+- Windows binary resolution preferred a shim that Windows cannot execute. npm
+  installs two files side by side: `codex.cmd`, which PowerShell and cmd run,
+  and an extensionless `codex`, which is a shell script for Git Bash. The PATH
+  walk tried the bare name first, so on a real machine it resolved
+  `%APPDATA%\npm\codex` and the CLI version came back blank. PATHEXT entries
+  are now tried before the bare name, which is still offered last.
+- The same walk could miss `codex.cmd` entirely on a case-sensitive filesystem:
+  candidates were recorded as seen *before* checking whether they exist, so a
+  non-existent `codex.CMD` claimed the key the real `codex.cmd` needed. Only
+  files that exist are deduped now. (Windows itself is case-insensitive, so
+  this bit the tests rather than users - but the tests are how the Windows
+  paths get exercised at all.)
+- `PATHEXT` was split with `os.pathsep`, which is `;` on Windows but `:`
+  elsewhere. Correct in production, and untestable from Linux, where these
+  Windows paths are exercised with `sys.platform` patched. It is split on `;`
+  unconditionally now, which is what Windows always uses.
+- `tools/verify-codex-release.ps1` reported a blank Codex CLI version and still
+  exited 0. A resolved path that will not run is precisely the failure this kit
+  exists to avoid, so it is now a counted FAIL - as is failing to resolve a
+  binary at all.
+
 - Codex binary resolution gave up after the first candidate on PATH and could
   reject the user's real install. Both were exposed by one machine where
   `where.exe codex` resolves to

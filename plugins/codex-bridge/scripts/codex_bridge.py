@@ -126,8 +126,16 @@ def which_all(name: str) -> list[str]:
     """
     exts = [""]
     if IS_WIN:
-        exts = [e for e in os.environ.get("PATHEXT", ".EXE;.CMD;.BAT").split(os.pathsep) if e]
-        exts = ["", *exts, *[e.lower() for e in exts]]
+        # PATHEXT first, bare name last. npm writes two shims side by side: a
+        # codex.cmd that PowerShell and cmd can run, and an extensionless codex
+        # that is a shell script for Git Bash. Windows will not execute the
+        # latter, so preferring it - as putting "" first does - resolves a real
+        # path that then cannot run.
+        # PATHEXT is a Windows concept and is always ";"-separated, whatever
+        # os.pathsep says on the host running this - which matters because the
+        # Windows paths here are tested from Linux with sys.platform patched.
+        pathext = [e for e in os.environ.get("PATHEXT", ".COM;.EXE;.BAT;.CMD").split(";") if e]
+        exts = [*pathext, *[e.lower() for e in pathext], ""]
     seen: set[str] = set()
     out: list[str] = []
     for directory in os.environ.get("PATH", "").split(os.pathsep):
@@ -135,12 +143,16 @@ def which_all(name: str) -> list[str]:
             continue
         for ext in exts:
             candidate = Path(directory) / (name + ext)
+            if not candidate.is_file():
+                continue
+            # Dedupe only among files that exist. Recording a miss would let a
+            # non-existent codex.CMD claim the key that the real codex.cmd needs
+            # on a case-sensitive filesystem.
             key = str(candidate).lower()
             if key in seen:
                 continue
             seen.add(key)
-            if candidate.is_file():
-                out.append(str(candidate))
+            out.append(str(candidate))
     return out
 
 
