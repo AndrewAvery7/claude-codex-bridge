@@ -13,13 +13,15 @@
 
 ### Changed
 - Re-verified against **Codex CLI 0.149.0** on Windows and updated the README
-  caveat, `docs/TESTING.md` and `SECURITY.md` to match. The flow passes there:
-  thread detection, dedupe, the model and effort flags, the working-directory
-  lookup, and a resolved binary that actually executes
-  (`%APPDATA%\npm\codex.CMD`). The "re-verification due" caveat that had stood
-  since 2026-08-10 is retired. Two gaps are recorded rather than papered over:
-  a *first* import of a never-imported transcript was not exercised, and the
-  two deep links still need a human to look at a screen.
+  caveat, `docs/TESTING.md` and `SECURITY.md` to match. Every automated
+  scenario passes there - a genuine first import, dedupe, the model and effort
+  flags, the working-directory lookup, and a resolved binary that actually
+  executes (`%APPDATA%\npm\codex.CMD`). The "re-verification due" caveat that
+  had stood since 2026-08-10 is retired. The first import needed
+  `-SynthesizeFreshSource`, which is recorded on the result rather than
+  glossed: a first import proved with a manufactured transcript is worth
+  distinguishing from one that happened to be lying around. The two deep links
+  still rest on a human confirming what opened.
 
 ### Fixed
 - Windows binary resolution preferred a shim that Windows cannot execute. npm
