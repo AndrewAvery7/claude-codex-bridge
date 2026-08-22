@@ -105,10 +105,23 @@ Add-Line '|---|---|'
 # only resolves inside a packaged app container.
 $codexPath = & $python $engine doctor 2>$null | Select-String -Pattern '^codex binary\s+(.+)$' | ForEach-Object { $_.Matches[0].Groups[1].Value.Trim() }
 if ($codexPath -and $codexPath -ne 'NOT FOUND' -and (Test-Path $codexPath)) {
-    $codexVersion = & $codexPath --version 2>&1 | Select-Object -First 1
-    Add-Row 'Codex CLI' ('{0} (resolved to {1})' -f $codexVersion, $codexPath)
+    $codexVersion = ''
+    try {
+        $codexVersion = (& $codexPath --version 2>&1 | Select-Object -First 1)
+    } catch {
+        $codexVersion = $_.Exception.Message
+    }
+    # A resolved path that will not run is the failure this kit exists to avoid.
+    # Reporting a blank version and carrying on would hide exactly that.
+    if ($codexVersion -match '\d+\.\d+\.\d+') {
+        Add-Row 'Codex CLI' ('{0} (resolved to {1})' -f $codexVersion, $codexPath)
+    } else {
+        $script:failCount = $script:failCount + 1
+        Add-Row 'Codex CLI' ('FAIL - resolved {0} but could not run it: {1}' -f $codexPath, $codexVersion)
+    }
 } else {
-    Add-Row 'Codex CLI' 'NOT FOUND - the engine could not resolve a binary'
+    $script:failCount = $script:failCount + 1
+    Add-Row 'Codex CLI' 'FAIL - the engine could not resolve a binary at all'
 }
 
 $pluginJson = Get-ChildItem (Join-Path $env:USERPROFILE '.claude\plugins\cache\openai-codex\codex\*\.claude-plugin\plugin.json') -ErrorAction SilentlyContinue |

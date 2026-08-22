@@ -313,6 +313,20 @@ def test_which_all_returns_every_path_hit_not_just_the_first(tmp_path, monkeypat
     assert found == [str(first / "codex"), str(second / "codex")]
 
 
+def test_which_all_prefers_an_executable_extension_on_windows(tmp_path, monkeypatch):
+    cb = _reload_as("win32")
+    # npm writes both: codex.cmd, which PowerShell and cmd can run, and an
+    # extensionless codex, which is a Git Bash shell script they cannot.
+    (tmp_path / "codex").write_text("#!/bin/sh\n", encoding="utf-8")
+    (tmp_path / "codex.cmd").write_text("@echo off\n", encoding="utf-8")
+    monkeypatch.setenv("PATH", str(tmp_path))
+    monkeypatch.setenv("PATHEXT", ".COM;.EXE;.BAT;.CMD")
+    found = cb.which_all("codex")
+    assert found[0].lower().endswith("codex.cmd"), found
+    # The bare shim is still offered, just last.
+    assert any(f.lower().endswith(os.sep + "codex") for f in found), found
+
+
 def test_codex_command_survives_a_machine_with_no_codex(tmp_path, monkeypatch):
     cb = _reload_as("linux")
     # A machine with no codex at all is a supported state - `doctor` calls this
