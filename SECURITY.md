@@ -46,9 +46,8 @@ moves with it. Transfer deliberately, the same way you would treat any export.
 
 Only the latest release is supported. Verified end-to-end against Codex CLI
 0.149.0 on 2026-08-22 - every automated scenario, including a first import -
-with VS Code extension 26.721 and codex-plugin-cc 1.0.6. The two deep-link
-destinations are confirmed visually rather than by the suite. See the caveats in
-the [README](README.md#caveats-honest-edges) about relying on undocumented Codex
-internals. The transfer flow was re-run live against Codex CLI 0.149.0 on
-2026-08-22 and passes in full ([docs/TESTING.md](docs/TESTING.md)); only the
-two deep-link destinations rest on a human confirming what opened.
+with VS Code extension 26.721 and codex-plugin-cc 1.0.6
+([docs/TESTING.md](docs/TESTING.md)). The two deep-link destinations rest on a
+human confirming what opened, since no part of the suite sees a screen. See
+also the caveats in the [README](README.md#caveats-honest-edges) about relying
+on undocumented Codex internals.
