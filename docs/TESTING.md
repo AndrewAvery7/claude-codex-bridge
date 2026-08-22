@@ -14,14 +14,22 @@ machine on 2026-07-24, against these versions:
 
 > **Re-verified on 0.149.0 (2026-08-22).** The live scenarios were re-run on
 > Windows against Codex CLI 0.149.0 — see the section below. Everything the
-> script can assert automatically passes except a first import, which it could
-> not set up; the two deep links still need a human. The table above stays as
-> the 2026-07-24 record; the newer results are their own section.
+> script can assert automatically passes, including a genuine first import. The
+> two deep links still need a human looking at a screen. The table above stays
+> as the 2026-07-24 record; the newer results are their own section.
 
 ## Re-run on Codex CLI 0.149.0, 2026-08-22
 
-Run with `tools/verify-codex-release.ps1 -RunTransfers` on Windows, after the
-CLI was upgraded and the engine was fixed to resolve it (see below).
+Run with `tools/verify-codex-release.ps1 -RunTransfers -SynthesizeFreshSource`
+on Windows, after the CLI was upgraded and the engine was fixed to resolve it
+(see below). Exit code 0, every automated scenario passing.
+
+T1 needed the synthesized source: Codex had already imported every settled
+transcript on the machine, so no first import was possible from what was on
+disk. The synthesized copy is a real transcript with a real content hash and
+produced a real thread - but a first import proved with a manufactured source
+is worth distinguishing from one that happened to be lying around, so it is
+recorded that way.
 
 | Component | Version |
 |---|---|
@@ -35,7 +43,7 @@ CLI was upgraded and the engine was fixed to resolve it (see below).
 | # | Result on 0.149.0 |
 |---|---|
 | T0 engine resolves a thread | PASS |
-| T1 fresh import | NOT EXERCISED - every recent settled transcript was already in the ledger |
+| T1 fresh import | PASS - via `-SynthesizeFreshSource`, since every transcript on disk had already been imported |
 | T3 dedupe | PASS - reused the prior thread |
 | T4 model and effort flags | PASS |
 | T5 absolute binary path | PASS - the emitted resume command uses the resolved `codex.CMD` |
