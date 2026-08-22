@@ -33,7 +33,9 @@
   the kit was verified against — every `threads` migration since is additive and
   `created_at` is still written on insert. The schema drift the caveat warns
   about has not happened, so no engine change is needed; the live end-to-end
-  re-run is tracked in #8.
+  re-run is tracked in #8. `SECURITY.md`'s supported-versions note points at
+  that check while keeping the supported pin on 0.145, the last install
+  verified end to end.
 - Plugin identifier renamed `codex-bridge` → `claude-codex-bridge` (in
   `plugins/codex-bridge/.claude-plugin/plugin.json` and the repo's own
   `.claude-plugin/marketplace.json`). The name `codex-bridge` was already taken
