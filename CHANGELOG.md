@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+### Changed
+- Re-verified against **Codex CLI 0.149.0** on Windows and updated the README
+  caveat, `docs/TESTING.md` and `SECURITY.md` to match. The flow passes there:
+  thread detection, dedupe, the model and effort flags, the working-directory
+  lookup, and a resolved binary that actually executes
+  (`%APPDATA%\npm\codex.CMD`). The "re-verification due" caveat that had stood
+  since 2026-08-10 is retired. Two gaps are recorded rather than papered over:
+  a *first* import of a never-imported transcript was not exercised, and the
+  two deep links still need a human to look at a screen.
+
 ### Fixed
 - Windows binary resolution preferred a shim that Windows cannot execute. npm
   installs two files side by side: `codex.cmd`, which PowerShell and cmd run,
