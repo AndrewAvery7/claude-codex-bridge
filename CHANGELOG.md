@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+### Added
+- `tools/verify-codex-release.ps1 -SynthesizeFreshSource`, which makes T1
+  possible on a machine where every settled transcript has already been
+  imported - the usual state after a while, and the reason T1 kept reporting
+  NOT EXERCISED. It copies the chosen transcript beside itself and appends a
+  blank line: enough to move the content hash Codex dedupes on, with every
+  record byte-identical. The copy is deleted at the end of the run. Opt-in,
+  because it writes a temporary file into `~/.claude/projects`.
+
 ### Changed
 - Re-verified against **Codex CLI 0.149.0** on Windows and updated the README
   caveat, `docs/TESTING.md` and `SECURITY.md` to match. The flow passes there:
