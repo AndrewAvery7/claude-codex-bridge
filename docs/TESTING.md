@@ -15,7 +15,7 @@ machine on 2026-07-24, against these versions:
 > **Re-verified on 0.149.0 (2026-08-22).** The live scenarios were re-run on
 > Windows against Codex CLI 0.149.0 — see the section below. Everything the
 > script can assert automatically passes, including a genuine first import. The
-> two deep links still need a human looking at a screen. The table above stays
+> two deep links were confirmed by eye on the same date. The table above stays
 > as the 2026-07-24 record; the newer results are their own section.
 
 ## Re-run on Codex CLI 0.149.0, 2026-08-22
@@ -48,7 +48,7 @@ recorded that way.
 | T4 model and effort flags | PASS |
 | T5 absolute binary path | PASS - the emitted resume command uses the resolved `codex.CMD` |
 | T6 thread working directory | PASS |
-| O1 / O2 deep links | not run - they need a human looking at a screen |
+| O1 / O2 deep links | PASS - both handlers accepted the dispatch, and the desktop app and VS Code panel were each confirmed by eye to open on the transferred thread |
 
 Getting here took six engine fixes, every one of them found by running the
 thing on Windows rather than reasoning about it from a Linux container:

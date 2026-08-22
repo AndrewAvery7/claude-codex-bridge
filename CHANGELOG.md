@@ -21,7 +21,9 @@
   `-SynthesizeFreshSource`, which is recorded on the result rather than
   glossed: a first import proved with a manufactured transcript is worth
   distinguishing from one that happened to be lying around. The two deep links
-  still rest on a human confirming what opened.
+  were then confirmed by eye - both handlers accepted the dispatch, and the
+  desktop app and VS Code panel each opened on the transferred thread - which
+  completes the verification for this release.
 
 ### Fixed
 - Windows binary resolution preferred a shim that Windows cannot execute. npm
