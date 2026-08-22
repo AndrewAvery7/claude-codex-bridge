@@ -178,6 +178,42 @@ def test_agents_md_cap_matches_codex_default():
 
 
 # ---------------------------------------------------------------------------
+# Windows binary resolution - a path can be on PATH and still refuse to run
+# ---------------------------------------------------------------------------
+
+def test_windowsapps_alias_is_rejected():
+    cb = _reload_as("win32")
+    # A Store app-execution alias: resolves on PATH, then a spawned process is
+    # denied with "Access is denied". Observed on a real machine 2026-08-22.
+    alias = r"C:\Users\someone\AppData\Local\Microsoft\WindowsApps\codex.exe"
+    assert cb._is_unusable_windows_path(alias)
+    assert cb._is_unusable_windows_path(alias.lower())
+    assert cb._is_unusable_windows_path(alias.replace("\\", "/"))
+
+
+def test_virtualized_npm_path_is_still_rejected(monkeypatch):
+    cb = _reload_as("win32")
+    monkeypatch.setenv("APPDATA", r"C:\Users\someone\AppData\Roaming")
+    assert cb._is_unusable_windows_path(r"C:\Users\someone\AppData\Roaming\npm\codex.cmd")
+
+
+def test_real_looking_exe_is_accepted(tmp_path):
+    cb = _reload_as("win32")
+    real = tmp_path / "codex.exe"
+    real.write_bytes(b"MZ not really an exe, but not empty either")
+    assert not cb._is_unusable_windows_path(str(real))
+
+
+def test_zero_length_binary_is_rejected(tmp_path):
+    cb = _reload_as("win32")
+    # An unresolved reparse point reads as a zero-length file; a real
+    # executable never does.
+    stub = tmp_path / "codex.exe"
+    stub.write_bytes(b"")
+    assert cb._is_unusable_windows_path(str(stub))
+
+
+# ---------------------------------------------------------------------------
 # picker choice - an out-of-range answer must be refused, never reinterpreted
 # ---------------------------------------------------------------------------
 

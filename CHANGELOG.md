@@ -2,6 +2,23 @@
 
 ## Unreleased
 
+### Fixed
+- `codex_command()` returned Windows paths that cannot actually be executed.
+  It guarded against one trap (an `npm -g` install virtualised inside a
+  packaged app) but not the other: `%LOCALAPPDATA%\Microsoft\WindowsApps\
+  codex.exe` is a Store app-execution alias - a zero-length reparse point that
+  resolves on PATH and then fails a spawned process with "Access is denied".
+  Reported from a real machine on 2026-08-22, where the resolved binary would
+  not run and the Codex CLI version came back blank. Both traps are now
+  rejected, along with any zero-length binary wherever it lives, and the
+  fallback additionally looks in the desktop app's own `bin` directory before
+  the vendored exe. This restores the README's claim of resolving a path that
+  is "real for every process".
+- The existing npm guard compared a path against a prefix built with
+  `pathlib`, which joins using the host separator - so the two sides could
+  disagree about `/` versus `\` and the guard would quietly stop matching.
+  Both sides are now normalised before comparison. It had no test; it does now.
+
 ### Added
 - `tools/verify-codex-release.ps1` now fails with a usable message when it is
   run from outside a clone of this repository. It drives the engine by relative
