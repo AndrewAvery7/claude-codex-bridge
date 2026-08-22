@@ -3,6 +3,24 @@
 ## Unreleased
 
 ### Fixed
+- A failed transfer could report no evidence at all. The error path filters
+  three known-noise strings out of the importer's output - including the
+  upstream false-negative message this kit exists to ignore - and when those
+  were *everything* the importer said, every line was filtered and the user got
+  an error with nothing in it. On a real machine that is exactly what happened:
+  four failed scenarios and not one `importer:` line to explain them. The
+  output is now shown raw when filtering would otherwise leave nothing, the
+  source path and size are printed, and the importer's exit code is reported -
+  it was captured and then discarded entirely. (A non-zero code still does not
+  prove the import failed: the upstream bug makes the importer throw on
+  transfers that worked.)
+- `tools/verify-codex-release.ps1` searched the entire transcript history for
+  one Codex had never imported, and walked back into transcripts old enough to
+  predate format changes. The failing source on the reporting machine was not
+  among the eight most recent. The search is now bounded to the ten most recent
+  transcripts and skips anything over 25 MB, which is a stress test rather than
+  a smoke test.
+
 - The engine called a slow import a failed one. `cmd_transfer` polled for the
   new thread fifteen times at one-second intervals and then gave up; on a real
   machine a genuine first import landed *after* that window, so the transfer

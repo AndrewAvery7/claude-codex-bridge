@@ -338,6 +338,35 @@ def companion_script() -> Path | None:
 # transfer
 # ---------------------------------------------------------------------------
 
+def importer_diagnosis(output: str, returncode: int) -> list[str]:
+    """Explain what the importer did, for a transfer that found no thread.
+
+    Three strings are filtered from normal reporting because they are noise on
+    every Windows transfer - including the upstream false-negative message this
+    kit exists to ignore. But when they are *all* the importer said, filtering
+    leaves an error with no evidence in it, which is worse than the noise it
+    removed. In that case show the output raw: at that point it is the only
+    evidence there is.
+
+    The exit code is always reported. A failing importer is the strongest
+    signal available and it was previously discarded - though note that a
+    non-zero code does not by itself mean the import failed, since the upstream
+    bug makes the importer throw on transfers that actually worked.
+    """
+    noise = ("DeprecationWarning", "--trace-deprecation", "did not record an imported thread")
+    lines = [f"importer exit code: {returncode}"]
+    said = [ln.strip() for ln in output.splitlines() if ln.strip()]
+    signal = [ln for ln in said if not any(n in ln for n in noise)]
+    if signal:
+        lines += [f"importer: {ln}" for ln in signal]
+    elif said:
+        lines.append("everything the importer printed is known noise; raw, since it is all we have:")
+        lines += [f"importer: {ln}" for ln in said[:10]]
+    else:
+        lines.append("the importer printed nothing at all.")
+    return lines
+
+
 def wait_for_import(
     before: int,
     ledger_before: str | None,
@@ -421,10 +450,12 @@ def cmd_transfer(args: argparse.Namespace) -> int:
     if thread_id is None:
         print("ERROR: no new Codex thread appeared, and no prior import of this", file=sys.stderr)
         print("       transcript exists in the ledger.", file=sys.stderr)
-        noise = ("DeprecationWarning", "--trace-deprecation", "did not record an imported thread")
-        for line in importer_output.splitlines():
-            if line.strip() and not any(n in line for n in noise):
-                print(f"       importer: {line.strip()}", file=sys.stderr)
+        try:
+            print(f"       source: {source} ({source.stat().st_size} bytes)", file=sys.stderr)
+        except OSError:
+            pass
+        for line in importer_diagnosis(importer_output, proc.returncode):
+            print(f"       {line}", file=sys.stderr)
         print(f"       Waited {args.wait}s. Try 'codex resume' - a slow import can", file=sys.stderr)
         print("       land later still, and --wait raises the window.", file=sys.stderr)
         return 1

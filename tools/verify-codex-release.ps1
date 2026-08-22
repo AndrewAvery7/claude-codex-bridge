@@ -212,7 +212,14 @@ if ($RunTransfers) {
         # its content hash moves between runs and T3 can never test dedupe.
         $all = Get-ChildItem (Join-Path $env:USERPROFILE '.claude\projects\*\*.jsonl') -ErrorAction SilentlyContinue |
             Sort-Object LastWriteTime -Descending
-        $settled = @($all | Where-Object { $_.LastWriteTime -lt (Get-Date).AddMinutes(-5) })
+        # Only look at recent transcripts. Searching the whole history for one
+        # Codex has never imported walks back into transcripts old enough to
+        # predate format changes, or large enough to be a stress test rather
+        # than a smoke test - neither tells you anything about this release.
+        $recent = @($all | Select-Object -First 10)
+        $settled = @($recent | Where-Object {
+            $_.LastWriteTime -lt (Get-Date).AddMinutes(-5) -and $_.Length -lt 25MB
+        })
         # Prefer one Codex has never seen, so T1 is a real first import.
         $never = $settled | Where-Object { -not $imported.ContainsKey($_.FullName.ToLower()) } | Select-Object -First 1
         if ($never) {
