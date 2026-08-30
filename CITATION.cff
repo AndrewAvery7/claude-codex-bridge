@@ -1,0 +1,26 @@
+cff-version: 1.2.0
+message: "If you use claude-codex-bridge in your work, please cite it as below."
+type: software
+title: "claude-codex-bridge"
+abstract: >-
+  A Claude Code plugin that hands a live coding session to OpenAI Codex in one
+  command, carrying the conversation, skills, instructions and memory across
+  intact. Addresses the practical problem of continuing work across AI coding
+  assistants without losing accumulated context, and documents a portable
+  pattern for keeping instruction sets and skills synchronised between two
+  agent runtimes.
+authors:
+  - family-names: Avery
+    given-names: Andrew
+    orcid: "https://orcid.org/0009-0005-5476-1213"
+repository-code: "https://github.com/AndrewAvery7/claude-codex-bridge"
+license: MIT
+version: 1.2.1
+date-released: "2026-08-30"
+keywords:
+  - ai coding assistants
+  - agent interoperability
+  - context transfer
+  - claude code
+  - openai codex
+  - developer tooling

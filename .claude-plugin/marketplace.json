@@ -5,13 +5,13 @@
   },
   "metadata": {
     "description": "Hand a live Claude Code session to OpenAI Codex - conversation, skills, instructions, and memory intact. Windows, macOS, Linux.",
-    "version": "1.2.0"
+    "version": "1.2.1"
   },
   "plugins": [
     {
       "name": "claude-codex-bridge",
       "description": "One-command session hand-off to OpenAI Codex with a clickable model picker; opens the Codex desktop app, VS Code panel, or terminal directly on the transferred thread. Cross-platform.",
-      "version": "1.2.0",
+      "version": "1.2.1",
       "author": {
         "name": "AndrewAvery7"
       },

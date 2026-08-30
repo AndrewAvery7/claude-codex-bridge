@@ -3,6 +3,11 @@
 ## Unreleased
 
 ### Added
+- `CITATION.cff` and `.zenodo.json`. The repository can now be cited. GitHub
+  renders a "Cite this repository" button from the first; the second tells
+  Zenodo how to describe each release it archives, so releases from here
+  receive a DOI attributed to an ORCID iD rather than to a bare GitHub
+  username.
 - `tools/verify-codex-release.ps1 -SynthesizeFreshSource`, which makes T1
   possible on a machine where every settled transcript has already been
   imported - the usual state after a while, and the reason T1 kept reporting

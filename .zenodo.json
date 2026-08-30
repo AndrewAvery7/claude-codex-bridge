@@ -1,0 +1,21 @@
+{
+  "title": "claude-codex-bridge: transferring a live AI coding session between agent runtimes",
+  "description": "<p>A Claude Code plugin that hands a live coding session to OpenAI Codex in one command, carrying the conversation, skills, instructions and memory across intact.</p><p>It addresses a practical interoperability problem: work accumulated inside one AI coding assistant &mdash; the conversation so far, the project-specific instructions, the installed skills, the persistent memory &mdash; is normally stranded there, so switching runtimes means starting over. The plugin serialises that state into a resumable thread in the target runtime and opens it directly.</p><p>Alongside the transfer mechanism, the repository documents a portable pattern for keeping instruction sets and skills synchronised between two agent runtimes, so that the same working environment is reproducible in either.</p>",
+  "upload_type": "software",
+  "access_right": "open",
+  "license": "MIT",
+  "creators": [
+    {
+      "name": "Avery, Andrew",
+      "orcid": "0009-0005-5476-1213"
+    }
+  ],
+  "keywords": [
+    "AI coding assistants",
+    "agent interoperability",
+    "context transfer",
+    "Claude Code",
+    "OpenAI Codex",
+    "developer tooling"
+  ]
+}
