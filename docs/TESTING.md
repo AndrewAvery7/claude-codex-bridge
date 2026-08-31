@@ -18,6 +18,11 @@ machine on 2026-07-24, against these versions:
 > two deep links were confirmed by eye on the same date. The table above stays
 > as the 2026-07-24 record; the newer results are their own section.
 
+> **Re-verification due (2026-08-31):** npm now lists `@openai/codex` 0.151.0
+> as latest — two releases ahead of the 0.149.0 verified above. The table
+> has not been re-run against a newer Codex install; treat it as valid for
+> 0.149.0 only.
+
 ## Re-run on Codex CLI 0.149.0, 2026-08-22
 
 Run with `tools/verify-codex-release.ps1 -RunTransfers -SynthesizeFreshSource`
