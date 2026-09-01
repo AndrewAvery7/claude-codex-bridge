@@ -12,11 +12,41 @@ machine on 2026-07-24, against these versions:
 | Claude Code | desktop app, July 2026 |
 | Windows | 11 Pro 26200, PowerShell 5.1 |
 
-> **Re-verified on 0.149.0 (2026-08-22).** The live scenarios were re-run on
-> Windows against Codex CLI 0.149.0 — see the section below. Everything the
-> script can assert automatically passes, including a genuine first import. The
-> two deep links were confirmed by eye on the same date. The table above stays
-> as the 2026-07-24 record; the newer results are their own section.
+> **Re-verified on 0.152.0 (2026-09-01).** The live scenarios were re-run on
+> Windows against Codex CLI 0.152.0 — see the section below. Everything the
+> script can assert automatically passes, including a genuine first import.
+> The two deep links were **not** confirmed by eye this round — screen access
+> for that check was declined, so O1/O2 are recorded as dispatched but
+> unconfirmed rather than PASS. The table above stays as the 2026-07-24
+> record; the newer results are their own section.
+
+## Re-run on Codex CLI 0.152.0, 2026-09-01
+
+Run with `tools/verify-codex-release.ps1 -RunTransfers -SynthesizeFreshSource`
+on Windows, after upgrading the global CLI from 0.145.0 (`npm install -g
+@openai/codex@latest`). Exit code 0, every automated scenario passing.
+
+T1 needed the synthesized source again, for the same reason as the 0.149.0 run
+below.
+
+| Component | Version |
+|---|---|
+| Codex CLI | 0.152.0, resolved to the vendored exe inside the Claude app container |
+| codex-plugin-cc | 1.0.6 (unchanged — confirmed against `gh release list`) |
+| Codex desktop app | 26.825.6671.0 |
+| VS Code extension (`openai.chatgpt`) | 26.818.41705 |
+| `threads` table | 38 columns, all four the engine reads present, 510 rows |
+| import ledger | 371 records |
+| `codex://` handler | registered |
+
+| # | Result on 0.152.0 |
+|---|---|
+| T0 engine resolves a thread | PASS |
+| T1 fresh import | PASS - via `-SynthesizeFreshSource` |
+| T3 dedupe | PASS - reused the prior thread |
+| T4 model and effort flags | PASS |
+| T6 thread working directory | PASS |
+| O1 / O2 deep links | DISPATCHED, NOT CONFIRMED - both `Start-Process` calls returned success, but the visual check (does the app actually land on the right thread) was not performed this run because screen-control access was declined |
 
 ## Re-run on Codex CLI 0.149.0, 2026-08-22
 

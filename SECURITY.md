@@ -44,10 +44,13 @@ moves with it. Transfer deliberately, the same way you would treat any export.
 
 ## Supported versions
 
-Only the latest release is supported. Verified end-to-end against Codex CLI
-0.149.0 on 2026-08-22 - every scenario, including a first import and both
-deep-link destinations - with VS Code extension 26.721 and codex-plugin-cc
-1.0.6 ([docs/TESTING.md](docs/TESTING.md)). The deep links were confirmed by
-eye, since no part of the suite sees a screen. See also the caveats in the
-[README](README.md#caveats-honest-edges) about relying on undocumented Codex
-internals.
+Only the latest release is supported. Re-run against Codex CLI 0.152.0 on
+2026-09-01: every scenario the test suite can assert automatically passes -
+first import, dedupe, the model and effort flags, and the working-directory
+lookup - with VS Code extension 26.818 and codex-plugin-cc 1.0.6
+([docs/TESTING.md](docs/TESTING.md)). The two deep links were **not**
+eye-confirmed this round (screen access for that check was declined), so
+treat that specific claim as carried over from the last fully-confirmed run,
+Codex CLI 0.149.0 on 2026-08-22, rather than re-established on 0.152.0. See
+also the caveats in the [README](README.md#caveats-honest-edges) about
+relying on undocumented Codex internals.

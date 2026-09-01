@@ -2,6 +2,18 @@
 
 ## Unreleased
 
+### Changed
+- Re-verified against **Codex CLI 0.152.0** on Windows (2026-09-01), after
+  upgrading the local install from 0.145.0. Every automated scenario in
+  `tools/verify-codex-release.ps1 -RunTransfers -SynthesizeFreshSource`
+  passes: first import, dedupe, the model and effort flags, and the
+  working-directory lookup. `codex-plugin-cc` is still 1.0.6, confirmed
+  current against `gh release list`. The two deep-link destinations were
+  dispatched but **not** eye-confirmed this round - screen-control access for
+  that check was declined - so README, SECURITY.md and docs/TESTING.md now
+  say so explicitly rather than silently carrying forward the "confirmed by
+  eye" claim from the 0.149.0 run.
+
 ### Added
 - `CITATION.cff` and `.zenodo.json`. The repository can now be cited. GitHub
   renders a "Cite this repository" button from the first; the second tells
