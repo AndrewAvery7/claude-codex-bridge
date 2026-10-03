@@ -80,7 +80,8 @@ reuses the existing thread — it says so when that happens.
 Tell the user: the thread id, WHERE it opened (quote what the engine printed —
 "Opened the Codex desktop app…" / "Opened the Codex panel in VS Code…"), and that
 the model is chosen in that surface's own dropdown. Print the terminal resume
-command from the output in a bash-fenced block as a fallback. Remind them the
+command from the output as a fallback, in a fenced block in the user's shell
+(on Windows PowerShell, prefix a quoted executable path with `&`). Remind them the
 transfer is a snapshot: anything said in Claude afterwards is not in the Codex
 thread.
 

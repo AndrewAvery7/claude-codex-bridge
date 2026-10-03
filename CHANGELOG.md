@@ -43,6 +43,9 @@
   completes the verification for this release.
 
 ### Fixed
+- `/to-codex` printed its fallback resume command in a bash-fenced block, even
+  on Windows PowerShell. It now uses the user's shell and notes that PowerShell
+  needs the `&` call operator before a quoted executable path.
 - Windows binary resolution preferred a shim that Windows cannot execute. npm
   installs two files side by side: `codex.cmd`, which PowerShell and cmd run,
   and an extensionless `codex`, which is a shell script for Git Bash. The PATH
