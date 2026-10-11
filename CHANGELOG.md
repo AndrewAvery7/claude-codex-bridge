@@ -19,6 +19,8 @@
   ("complete all work") that authorizes the full ship flow - commit, PR,
   merge on green checks, verify the deploy - so the agent doesn't stop at an
   open PR. The operating manual moves from section 4 to section 5.
+  It says to merge only after checks have passed and warns that GitHub
+  auto-merge waits only for *required* checks, so it can merge untested.
 - `CITATION.cff` and `.zenodo.json`. The repository can now be cited. GitHub
   renders a "Cite this repository" button from the first; the second tells
   Zenodo how to describe each release it archives, so releases from here
