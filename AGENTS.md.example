@@ -46,10 +46,11 @@ tasks"), that authorizes the whole git flow in any repo: branch, commit, push,
 open the PR, merge it once its checks pass on the latest commit (squash, delete
 the branch), then verify the deploy. Treat the phrase as explicit merge
 authorization - don't stop at an open PR or hand the user a merge command - but
-still merge only on green checks. Where the repo allows it, use GitHub
-auto-merge (`gh pr merge --auto --squash --delete-branch`) so the merge lands
-when checks pass. Mirror the same rule on the Claude side so both agents treat
-the phrase identically.
+merge only after the PR's checks have run and passed, never before. Don't rely
+on GitHub auto-merge to wait for them: it only waits for checks the repo marks
+as required, so on a repo without that rule it merges instantly and untested.
+Mirror the same rule on the Claude side so both agents treat the phrase
+identically.
 
 # 5. Operating Manual
 This manual governs how you work: how to read requests, allocate effort,
