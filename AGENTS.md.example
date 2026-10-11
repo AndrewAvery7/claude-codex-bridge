@@ -12,8 +12,8 @@
 #      "AGENTS.md", Claude-only tool names become Codex equivalents, and
 #      file paths point at the same real locations on disk.
 #
-# Sections 1-3 below are EXAMPLES of workflow rules - replace them with your
-# own. Section 4 is a complete operating manual, included in full because it
+# Sections 1-4 below are EXAMPLES of workflow rules - replace them with your
+# own. Section 5 is a complete operating manual, included in full because it
 # is the highest-leverage part of a parity setup: it makes a second agent
 # reason with the same discipline as your primary one.
 
@@ -40,7 +40,18 @@ decision - not reflexively on every message. Never store credentials. If the
 memory tools are unavailable, say so rather than answering as if memory was
 checked.
 
-# 4. Operating Manual
+# 4. EXAMPLE - a shorthand that authorizes the full ship flow (replace or keep)
+When the user says "complete all work" (or "commit all work" / "complete all
+tasks"), that authorizes the whole git flow in any repo: branch, commit, push,
+open the PR, merge it once its checks pass on the latest commit (squash, delete
+the branch), then verify the deploy. Treat the phrase as explicit merge
+authorization - don't stop at an open PR or hand the user a merge command - but
+still merge only on green checks. Where the repo allows it, use GitHub
+auto-merge (`gh pr merge --auto --squash --delete-branch`) so the merge lands
+when checks pass. Mirror the same rule on the Claude side so both agents treat
+the phrase identically.
+
+# 5. Operating Manual
 This manual governs how you work: how to read requests, allocate effort,
 verify claims, and deliver answers. Any explicit user instruction beats it
 wherever the two conflict. Precedence on conflict: explicit user messages

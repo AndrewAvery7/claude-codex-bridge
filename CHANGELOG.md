@@ -15,6 +15,10 @@
   eye" claim from the 0.149.0 run.
 
 ### Added
+- `AGENTS.md.example` gains a fourth example workflow rule: a shorthand
+  ("complete all work") that authorizes the full ship flow - commit, PR,
+  merge on green checks, verify the deploy - so the agent doesn't stop at an
+  open PR. The operating manual moves from section 4 to section 5.
 - `CITATION.cff` and `.zenodo.json`. The repository can now be cited. GitHub
   renders a "Cite this repository" button from the first; the second tells
   Zenodo how to describe each release it archives, so releases from here
